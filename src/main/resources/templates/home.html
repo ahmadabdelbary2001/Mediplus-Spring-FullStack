@@ -1,5 +1,6 @@
-<!doctype html>
-<html class="no-js" lang="zxx">
+<!-- home.html -->
+<!DOCTYPE html>
+<html class="no-js" lang="zxx" xmlns:th="http://www.thymeleaf.org">
 <head>
     <!-- Meta Tags -->
     <meta charset="utf-8">
@@ -10,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Title -->
-    <title>Mediplus | Home</title>
+    <title>MEDIPLUS | Home</title>
 
     <!-- Favicon -->
     <link rel="icon" href="/img/favicon.png">
@@ -63,32 +64,6 @@
 
 <!-- Header Area -->
 <header class="header" >
-    <!-- Topbar -->
-    <div class="topbar">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 col-md-5 col-12">
-                    <!-- Contact -->
-                    <ul class="top-link">
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Doctors</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">FAQ</a></li>
-                    </ul>
-                    <!-- End Contact -->
-                </div>
-                <div class="col-lg-6 col-md-7 col-12">
-                    <!-- Top Contact -->
-                    <ul class="top-contact">
-                        <li><i class="fa fa-phone"></i>+880 1234 56789</li>
-                        <li><i class="fa fa-envelope"></i><a href="mailto:support@yourmail.com">support@yourmail.com</a></li>
-                    </ul>
-                    <!-- End Top Contact -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Topbar -->
     <!-- Header Inner -->
     <div class="header-inner">
         <div class="container">
@@ -124,7 +99,7 @@
                     </div>
                     <div class="col-lg-2 col-12">
                         <div class="get-quote">
-                            <a href="#" class="btn">Book Appointment</a>
+                            <a th:href="@{/auth/login}" class="btn">Book Appointment</a>
                         </div>
                     </div>
                 </div>
@@ -147,7 +122,7 @@
                             <h1>Welcome to <span>MediPlus</span> Clinic <span>System!</span></h1>
                             <p>Integrated solution for patients, doctors and clinic management</p>
                             <div class="button">
-                                <a href="#" class="btn">Get Started</a>
+                                <a th:href="@{/auth/login}" class="btn">Get Started</a>
                                 <a href="#" class="btn primary">Learn More</a>
                             </div>
                         </div>
@@ -165,7 +140,7 @@
                             <h1>Welcome to <span>MediPlus</span> Clinic <span>System!</span></h1>
                             <p>Integrated solution for patients, doctors and clinic management</p>
                             <div class="button">
-                                <a href="#" class="btn">Get Started</a>
+                                <a th:href="@{/auth/login}" class="btn">Get Started</a>
                                 <a href="#" class="btn primary">About Us</a>
                             </div>
                         </div>
@@ -183,7 +158,7 @@
                             <h1>Welcome to <span>MediPlus</span> Clinic <span>System!</span></h1>
                             <p>Integrated solution for patients, doctors and clinic management</p>
                             <div class="button">
-                                <a href="#" class="btn">Get Appointment</a>
+                                <a th:href="@{/auth/login}" class="btn">Get Appointment</a>
                                 <a href="#" class="btn primary">Conatct Now</a>
                             </div>
                         </div>
@@ -453,7 +428,10 @@
                     <div class="row">
                         <div class="col-lg-5 col-md-4 col-12">
                             <div class="form-group">
-                                <button type="submit" class="btn">Book Now</button>
+<!--                                <div class="button">-->
+<!--                                    <a th:href="@{/auth/login}" class="btn">Book Now</a>-->
+<!--                                </div>-->
+                                <button th:href="@{/auth/login}" type="submit" class="btn">Book Now</button>
                             </div>
                         </div>
                     </div>
