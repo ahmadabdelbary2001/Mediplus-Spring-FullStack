@@ -1,4 +1,4 @@
-<!-- patient/profile.html -->
+<!-- patient/profile/edit.html -->
 <!DOCTYPE html>
 <html class="no-js" lang="zxx" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Title -->
-    <title>MEDIPLUS | Profile</title>
+    <title>MEDIPLUS | Edit Profile</title>
 
     <!-- Favicon -->
     <link rel="icon" href="/img/favicon.png">
@@ -50,23 +50,35 @@
     <div class="container">
         <div class="card shadow-sm mx-auto" style="max-width: 600px;">
             <div class="card-body">
-                <h3 class="card-title text-center mb-4">My Profile</h3>
-                <dl class="row">
-                    <dt class="col-sm-4">Username</dt>
-                    <dd class="col-sm-8" th:text="${patient.username}">[username]</dd>
+                <h3 class="card-title text-center mb-4">Edit Profile</h3>
+                <form th:action="@{/patient/profile/edit}" th:object="${patient}" method="post">
+                    <!-- CSRF token -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-                    <dt class="col-sm-4">Email</dt>
-                    <dd class="col-sm-8" th:text="${patient.email}">[email]</dd>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input th:field="*{username}" type="text" class="form-control" required />
+                    </div>
 
-                    <dt class="col-sm-4">Date of Birth</dt>
-                    <dd class="col-sm-8" th:text="${#dates.format(patient.dateOfBirth, 'yyyy-MM-dd')}">[YYYY-MM-DD]</dd>                </dl>
-                <div class="text-center mt-4">
-                    <a th:href="@{/patient/profile/edit}" class="btn btn-outline-primary">Edit Profile</a>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input th:field="*{email}" type="email" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input th:field="*{dateOfBirth}" type="date" class="form-control" required />
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </section>
+
 
 <!-- jquery Min JS -->
 <script src="/js/jquery.min.js"></script>

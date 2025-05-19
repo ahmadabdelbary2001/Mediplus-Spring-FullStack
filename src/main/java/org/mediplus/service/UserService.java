@@ -5,6 +5,9 @@ import org.mediplus.model.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +31,14 @@ public class UserService {
         demoPatient.setPassword("patient");
         demoPatient.setRole("PATIENT");
         demoPatient.setInsuranceId("INS-12345");
+
+        try {
+            Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-06-15");
+            demoPatient.setDateOfBirth(dob);
+        } catch (ParseException e) {
+            throw new RuntimeException("Invalid demo DOB", e);
+        }
+
         registerUser(demoPatient);
         // users.put(user.getUsername(), user);
     }
@@ -44,5 +55,9 @@ public class UserService {
 
     public Map<String, User> getAllUsers() {
         return users;
+    }
+
+    public void updatePatient(Patient updated) {
+        users.put(updated.getUsername(), updated);
     }
 }
