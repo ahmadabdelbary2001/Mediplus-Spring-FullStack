@@ -1,5 +1,6 @@
 package org.mediplus.service;
 
+import org.mediplus.model.Doctor;
 import org.mediplus.model.Patient;
 import org.mediplus.model.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -41,16 +44,43 @@ public class UserService {
 
         registerUser(demoPatient);
         // users.put(user.getUsername(), user);
+
+        Doctor demoDoc = new Doctor();
+        demoDoc.setUsername("doctor");
+        demoDoc.setEmail("doctor@example.com");
+        demoDoc.setPassword("doctor");
+        demoDoc.setRole("DOCTOR");
+        demoDoc.setSpecialization("General Medicine");
+        demoDoc.setLicenseNumber("LIC-0001");
+        demoDoc.setClinicLocation("Main Clinic");
+        // leave availableSlots empty for now
+        registerUser(demoDoc);
+    }
+
+    public void registerUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        users.put(user.getUsername(), user);
     }
 
     public void registerUser(Patient patient) {
-        // Encode the password before saving
         patient.setPassword(passwordEncoder.encode(patient.getPassword()));
         users.put(patient.getUsername(), patient);
     }
 
+    public void registerUser(Doctor doctor) {
+        doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
+        users.put(doctor.getUsername(), doctor);
+    }
+
     public User findByUsername(String username) {
         return users.get(username);
+    }
+
+    public List<Doctor> findAllDoctors() {
+        return users.values().stream()
+                .filter(u -> u instanceof Doctor)
+                .map(u -> (Doctor)u)
+                .collect(Collectors.toList());
     }
 
     public Map<String, User> getAllUsers() {

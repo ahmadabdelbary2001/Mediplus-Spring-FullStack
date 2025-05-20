@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 public class SecurityConfig {
@@ -25,19 +26,32 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/home", "/auth/**", "/css/**", "/js/**", "/img/**", "/fonts/**", "/mail/**").permitAll()
                         .requestMatchers("/patient/**").hasRole("PATIENT")
+                        .requestMatchers("/doctor/**").hasRole("DOCTOR")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(form -> form
                         .loginPage("/auth/login")
-                        .defaultSuccessUrl("/patient/dashboard", true)
+                        .successHandler(authenticationSuccessHandler())
                 )
                 .logout(logout -> logout
                         .permitAll()
-                        .logoutSuccessUrl("/auth/login?logout")
+                        .logoutSuccessUrl("/home")
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            if (authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"))) {
+                response.sendRedirect("/doctor/dashboard");
+            } else {
+                response.sendRedirect("/patient/dashboard");
+            }
+        };
     }
 
     @Bean
@@ -47,11 +61,9 @@ public class SecurityConfig {
             if (user == null) {
                 throw new UsernameNotFoundException("User not found");
             }
-            User.UserBuilder builder = User.withUsername(user.getUsername());
-            builder.password(user.getPassword());  // Password should be encoded
-            if (user.getRole() != null) {
-                builder.roles(user.getRole());
-            }
+            User.UserBuilder builder = User.withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .roles(user.getRole());
             return builder.build();
         };
     }
