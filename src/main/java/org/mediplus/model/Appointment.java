@@ -7,27 +7,27 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Appointment {
-    private Long id;
+    private int id;
     private LocalDateTime dateTime;
-    private String notes;
     private String status;
-    private Patient patient;
-    private Doctor doctor;
+    private String patientUsername;
+    private String doctorUsername;
 
-    public Appointment(Long id, LocalDateTime dateTime, String notes, String status, Patient patient, Doctor doctor) {
+    public Appointment() {}
+
+    public Appointment(int id, LocalDateTime dateTime, String status, String patientUsername, String doctorUsername) {
         this.id = id;
         this.dateTime = dateTime;
-        this.notes = notes;
         this.status = status;
-        this.patient = patient;
-        this.doctor = doctor;
+        this.patientUsername = patientUsername;
+        this.doctorUsername = doctorUsername;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -47,27 +47,19 @@ public class Appointment {
         this.status = status;
     }
 
-    public Patient getPatient() {
-        return patient;
+    public String getPatientUsername() {
+        return patientUsername;
     }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
+    public void setPatientUsername(String patientUsername) {
+        this.patientUsername = patientUsername;
     }
 
-    public Doctor getDoctor() {
-        return doctor;
+    public String getDoctorUsername() {
+        return doctorUsername;
     }
 
-    public void setDoctor(Doctor doctor) {
-        this.doctor = doctor;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setDoctorUsername(String doctorUsername) {
+        this.doctorUsername = doctorUsername;
     }
 }
