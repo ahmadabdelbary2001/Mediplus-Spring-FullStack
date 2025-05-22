@@ -1,6 +1,6 @@
 package org.mediplus.config;
 
-import org.mediplus.service.UserService;
+import org.mediplus.service.UserServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -14,9 +14,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @Configuration
 public class SecurityConfig {
 
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
-    public SecurityConfig(UserService userService) {
+    public SecurityConfig(UserServiceImpl userService) {
         this.userService = userService;
     }
 
@@ -57,14 +57,15 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> {
-            org.mediplus.model.User user = userService.findByUsername(username);
-            if (user == null) {
-                throw new UsernameNotFoundException("User not found");
-            }
+            org.mediplus.model.User user = userService
+                    .findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
             User.UserBuilder builder = User.withUsername(user.getUsername())
                     .password(user.getPassword())
                     .roles(user.getRole());
             return builder.build();
         };
     }
+
 }

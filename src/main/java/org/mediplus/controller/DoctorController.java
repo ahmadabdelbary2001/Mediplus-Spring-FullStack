@@ -1,16 +1,16 @@
 package org.mediplus.controller;
 
 import org.mediplus.model.Doctor;
+import org.mediplus.model.Patient;
+import org.mediplus.model.User;
 import org.mediplus.service.AppointmentService;
 import org.mediplus.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/doctor")
@@ -24,11 +24,41 @@ public class DoctorController {
         this.apptService = apptService;
     }
 
+    @ModelAttribute("doctors")
+    public Doctor currentDoctor(Principal principal) {
+        User u = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return (Doctor) u;
+    }
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
-        Doctor doctor = (Doctor) userService.findByUsername(principal.getName());
-        model.addAttribute("doctor", doctor);
+        User u = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        model.addAttribute("doctor", (Doctor) u);
         return "doctor/dashboard";
+    }
+
+    @GetMapping("/profile")
+    public String profile(Model model, Principal principal) {
+        Doctor doctor = (Doctor) userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        model.addAttribute("doctor", doctor);
+        return "doctor/profile";
+    }
+
+    @GetMapping("/profile/edit")
+    public String editProfileForm(Model model, Principal principal) {
+        Doctor doctor = (Doctor) userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        model.addAttribute("doctor", doctor);
+        return "doctor/profile/edit";
+    }
+
+    @PostMapping("/profile/edit")
+    public String editProfileSubmit(@ModelAttribute("doctor") Doctor doctor) {
+        userService.updateDoctor(doctor);
+        return "redirect:/doctor/profile?updated";
     }
 
     @GetMapping("/schedule")

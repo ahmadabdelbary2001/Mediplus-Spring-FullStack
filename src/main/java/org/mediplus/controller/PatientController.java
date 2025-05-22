@@ -9,7 +9,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
@@ -27,20 +26,21 @@ public class PatientController {
         this.apptService = apptService;
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(Principal principal, Model model) {
-        return "patient/dashboard";   // templates/patient/dashboard.html
-    }
-
     @ModelAttribute("patient")
     public Patient currentPatient(Principal principal) {
-        User u = userService.findByUsername(principal.getName());
+        User u = userService.findByUsername(principal.getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return (Patient) u;
     }
 
     @ModelAttribute("doctors")
     public List<Doctor> allDoctors() {
         return userService.findAllDoctors();
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard(Principal principal, Model model) {
+        return "patient/dashboard";   // templates/patient/dashboard.html
     }
 
     @GetMapping("/profile")
@@ -88,11 +88,6 @@ public class PatientController {
         String patientUsername = currentPatient(principal).getUsername();
         appointment.setPatientUsername(patientUsername);
         appointment.setStatus("PENDING");
-        int nextId = apptService.findAll().stream()
-                .mapToInt(Appointment::getId)
-                .max()
-                .orElse(0) + 1;
-        appointment.setId(nextId);
         apptService.add(appointment);
         return "redirect:/patient/appointments?success";
     }

@@ -1,5 +1,6 @@
 package org.mediplus.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,10 +9,17 @@ import java.util.Date;
 
 @Getter
 @Setter
+@Entity
+@DiscriminatorValue("PATIENT")
 public class Patient extends User {
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "date_of_birth")
+    @Temporal(TemporalType.DATE)
     private Date dateOfBirth;
-    private String insuranceId; // Health insurance number
+
+    @Column(name = "insurance_id")
+    private String insuranceId;
 
     // Constructors
     public Patient() {

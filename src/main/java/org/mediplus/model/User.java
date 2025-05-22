@@ -1,14 +1,27 @@
 package org.mediplus.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "users")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "role")
 public abstract class User {
+    @Id
+    @Column(length = 50, nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(insertable = false, updatable = false)
     private String role;
 
     // Constructors

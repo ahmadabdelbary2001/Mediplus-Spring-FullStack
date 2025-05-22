@@ -1,16 +1,30 @@
 package org.mediplus.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@Entity
+@Table(name= "Appointments")
 public class Appointment {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
+
+    @Column(nullable = false)
     private String status;
+
+    @Column(name = "patient_username", nullable = false)
     private String patientUsername;
+
+    @Column(name = "doctor_username", nullable = false)
     private String doctorUsername;
 
     public Appointment() {}
@@ -23,11 +37,11 @@ public class Appointment {
         this.doctorUsername = doctorUsername;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

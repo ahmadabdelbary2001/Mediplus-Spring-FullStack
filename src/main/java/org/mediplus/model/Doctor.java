@@ -1,5 +1,6 @@
 package org.mediplus.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +9,19 @@ import java.util.List;
 
 @Getter
 @Setter
+@Entity
+@DiscriminatorValue("DOCTOR")
 public class Doctor extends User {
+
+    @Column
     private String specialization;
+
+//    @Column(name = "license_number")
+//    private String licenseNumber;
+//
+//    @Column(name = "clinic_location")
+//    private String clinicLocation;
+
     private String licenseNumber;
     private String clinicLocation;
 //    private List<LocalDateTime> availableSlots; // times the doctor is available

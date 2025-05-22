@@ -1,6 +1,5 @@
 package org.mediplus.controller;
 
-import org.mediplus.model.User;
 import org.mediplus.model.Patient;
 import org.mediplus.service.UserService;
 import org.springframework.ui.Model;
@@ -37,7 +36,7 @@ public class AuthController {
             }
 
             patient.setRole("PATIENT");
-            userService.registerUser(patient);
+            userService.registerPatient(patient);
             model.addAttribute("success", "Registration successful! Please login.");
             return "auth/login";
         } catch (Exception e) {
