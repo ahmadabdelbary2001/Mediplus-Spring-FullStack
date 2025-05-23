@@ -71,7 +71,7 @@ public class PatientController {
     @GetMapping("/add-new-appointment")
     public String showAppointmentForm(Model model) {
         model.addAttribute("appointment", new Appointment());
-        model.addAttribute("doctors", userService.findAllDoctors());
+        model.addAttribute("doctors", allDoctors());
         return "patient/add-new-appointment";
     }
 
@@ -97,7 +97,7 @@ public class PatientController {
         Optional<Appointment> appointmentOpt = apptService.findById(id);
         if (appointmentOpt.isPresent()) {
             model.addAttribute("appointment", appointmentOpt.get());
-            model.addAttribute("doctors", userService.findAllDoctors());
+            model.addAttribute("doctors", allDoctors());
             return "patient/edit-appointment";
         }
         return "redirect:/patient/appointments";

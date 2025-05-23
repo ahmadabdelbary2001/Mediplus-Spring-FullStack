@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 
 @Configuration
 public class SecurityConfig {
@@ -27,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/home", "/auth/**", "/css/**", "/js/**", "/img/**", "/fonts/**", "/mail/**").permitAll()
                         .requestMatchers("/patient/**").hasRole("PATIENT")
                         .requestMatchers("/doctor/**").hasRole("DOCTOR")
+                        .requestMatchers("/get-started").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
@@ -35,8 +37,11 @@ public class SecurityConfig {
                         .successHandler(authenticationSuccessHandler())
                 )
                 .logout(logout -> logout
-                        .permitAll()
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/home")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
                 );
 
         return http.build();
@@ -66,6 +71,11 @@ public class SecurityConfig {
                     .roles(user.getRole());
             return builder.build();
         };
+    }
+
+    @Bean
+    public SpringSecurityDialect springSecurityDialect() {
+        return new SpringSecurityDialect();
     }
 
 }

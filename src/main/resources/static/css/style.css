@@ -582,6 +582,13 @@ body{
 	animation: fadeInDown 0.5s both 0.1s;
 	box-shadow:0px 0px 13px #00000054;
 }
+.hover-primary:hover {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    color: #0d6efd !important;
+}
+.hover-primary:hover .text-dark {
+    color: #0d6efd !important;
+}
 /*=========================
 	End Header CSS
 ===========================*/

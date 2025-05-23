@@ -33,25 +33,19 @@ public class DoctorController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
-        User u = userService.findByUsername(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        model.addAttribute("doctor", (Doctor) u);
+        model.addAttribute("doctor", currentDoctor(principal));
         return "doctor/dashboard";
     }
 
     @GetMapping("/profile")
     public String profile(Model model, Principal principal) {
-        Doctor doctor = (Doctor) userService.findByUsername(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        model.addAttribute("doctor", doctor);
+        model.addAttribute("doctor", currentDoctor(principal));
         return "doctor/profile";
     }
 
     @GetMapping("/profile/edit")
     public String editProfileForm(Model model, Principal principal) {
-        Doctor doctor = (Doctor) userService.findByUsername(principal.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        model.addAttribute("doctor", doctor);
+        model.addAttribute("doctor", currentDoctor(principal));
         return "doctor/profile/edit";
     }
 
@@ -62,17 +56,20 @@ public class DoctorController {
     }
 
     @GetMapping("/schedule")
-    public String schedule(Model model) {
+    public String schedule(Principal principal, Model model) {
+        model.addAttribute("doctor", currentDoctor(principal));
         return "doctor/schedule";
     }
 
     @GetMapping("/prescription")
-    public String prescription(Model model) {
+    public String prescription(Principal principal, Model model) {
+        model.addAttribute("doctor", currentDoctor(principal));
         return "doctor/prescription";
     }
 
     @GetMapping("/appointments")
     public String appointments(Model model, Principal principal) {
+        model.addAttribute("doctor", currentDoctor(principal));
         String docUsername = principal.getName();
         model.addAttribute("requests",
                 apptService.findByDoctorUsername(docUsername));
