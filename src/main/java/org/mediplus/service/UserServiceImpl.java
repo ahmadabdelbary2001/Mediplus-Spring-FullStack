@@ -1,5 +1,6 @@
 package org.mediplus.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.mediplus.model.Doctor;
 import org.mediplus.model.Patient;
 import org.mediplus.model.User;
@@ -12,18 +13,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository
+//            , PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+//        this.passwordEncoder = passwordEncoder;
+        log.info("Initializing User Service");
+        initializeDemoData();
+    }
 
-        // --- create demo patient ---
+    private void initializeDemoData() {
+        // Only create demo data if users don't exist
+        if (!existsByUsername("patient")) {
+            createDemoPatient();
+        }
+        if (!existsByUsername("doctor")) {
+            createDemoDoctor();
+        }
+    }
+
+    private void createDemoPatient() {
+        log.debug("Creating demo patient account");
         Patient demoPatient = new Patient();
         demoPatient.setUsername("patient");
         demoPatient.setEmail("patient@example.com");
@@ -36,9 +53,11 @@ public class UserServiceImpl implements UserService {
         } catch (ParseException e) {
             throw new RuntimeException("Invalid demo DOB", e);
         }
-        registerUser(demoPatient);
+        createPatient(demoPatient);
+    }
 
-        // --- create demo doctor ---
+    private void createDemoDoctor() {
+        log.debug("Creating demo doctor account");
         Doctor demoDoc = new Doctor();
         demoDoc.setUsername("doctor");
         demoDoc.setEmail("doctor@example.com");
@@ -47,28 +66,39 @@ public class UserServiceImpl implements UserService {
         demoDoc.setSpecialization("General Medicine");
         demoDoc.setLicenseNumber("LIC-0001");
         demoDoc.setClinicLocation("Main Clinic");
-        registerUser(demoDoc);
+        createDoctor(demoDoc);
     }
 
     @Override
-    public void registerUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+    public User createUser(User user) {
+        log.info("Creating new user: {}", user.getUsername());
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(user.getPassword());
+        return userRepository.save(user);
     }
 
     @Override
-    public void registerPatient(Patient patient) {
-        registerUser(patient);
+    public Patient createPatient(Patient patient) {
+//        patient.setPassword(passwordEncoder.encode(patient.getPassword()));
+        patient.setPassword(patient.getPassword());
+        return userRepository.save(patient);
     }
 
     @Override
-    public void registerDoctor(Doctor doctor) {
-        registerUser(doctor);
+    public Doctor createDoctor(Doctor doctor) {
+//        doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
+        doctor.setPassword(doctor.getPassword());
+        return userRepository.save(doctor);
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
     }
 
     @Override
@@ -77,12 +107,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePatient(Patient patient) {
-        userRepository.save(patient);
+    public Patient updatePatient(Patient patient) {
+        return userRepository.save(patient);
     }
 
     @Override
-    public void updateDoctor(Doctor doctor) {
-        userRepository.save(doctor);
+    public Doctor updateDoctor(Doctor doctor) {
+        return userRepository.save(doctor);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public boolean authenticate(User user) {
+        log.debug("Authenticating user: {}", user.getUsername());
+        User existingUser = userRepository.findByUsername(user.getUsername()).orElse(null);
+
+        if (existingUser == null) {
+            return false;
+        }
+
+//        return passwordEncoder.matches(user.getPassword(), existingUser.getPassword());
+        return existingUser.getPassword().equals(user.getPassword());
     }
 }

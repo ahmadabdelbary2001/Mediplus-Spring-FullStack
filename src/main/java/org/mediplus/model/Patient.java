@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 @Getter
@@ -32,19 +36,8 @@ public class Patient extends User {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getInsuranceId() {
-        return insuranceId;
-    }
-
-    public void setInsuranceId(String insuranceId) {
-        this.insuranceId = insuranceId;
-    }
-
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_PATIENT"));
     }
 }

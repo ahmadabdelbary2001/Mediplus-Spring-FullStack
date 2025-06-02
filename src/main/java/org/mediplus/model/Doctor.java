@@ -3,8 +3,12 @@ package org.mediplus.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -44,35 +48,16 @@ public class Doctor extends User {
 //        this.availableSlots = availableSlots;
     }
 
-    public String getSpecialization() {
-        return specialization;
-    }
-
-    public void setSpecialization(String specialization) {
-        this.specialization = specialization;
-    }
-
-    public String getLicenseNumber() {
-        return licenseNumber;
-    }
-
-    public void setLicenseNumber(String licenseNumber) {
-        this.licenseNumber = licenseNumber;
-    }
-
-    public String getClinicLocation() {
-        return clinicLocation;
-    }
-
-    public void setClinicLocation(String clinicLocation) {
-        this.clinicLocation = clinicLocation;
-    }
-
-//    public List<LocalDateTime> getAvailableSlots() {
+    //    public List<LocalDateTime> getAvailableSlots() {
 //        return availableSlots;
 //    }
 //
 //    public void setAvailableSlots(List<LocalDateTime> availableSlots) {
 //        this.availableSlots = availableSlots;
 //    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_DOCTOR"));
+    }
 }

@@ -17,41 +17,60 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Optional<Appointment> findById(int id) {
-        return apptRepo.findById(id);
+    public Appointment getAppointmentById(Long id) {
+        return apptRepo.findById(id).orElse(null);
     }
 
     @Override
-    public List<Appointment> findAll() {
+    public List<Appointment> getAllAppointments() {
         return apptRepo.findAll();
     }
 
+    @Override
+    public List<Appointment> getAppointmentsByUserId(Long userId) {
+        // fetch all rows with the same userId
+        return apptRepo.findAll()
+                .stream()
+                .filter(user -> user.getId().equals(userId))
+                .toList();
+    }
     @Override
     public List<Appointment> findByDoctorUsername(String doctorUsername) {
         return apptRepo.findByDoctorUsername(doctorUsername);
     }
 
     @Override
-    public void add(Appointment appointment) {
-        apptRepo.save(appointment);
+    public List<Appointment> findByPatientUsername(String patientUsername) {
+        return apptRepo.findByPatientUsername(patientUsername);
     }
 
     @Override
-    public void saveAppointment(Appointment appointment) {
-        apptRepo.save(appointment);
+    public Appointment createAppointment(Appointment appointment) {
+        return apptRepo.save(appointment);
     }
 
     @Override
-    public void deleteById(int id) {
+    public Appointment updateAppointment(Long id, Appointment appointment) {
+        Appointment existing = apptRepo.findById(id).orElse(null);
+        if (existing == null) {
+            return null;
+        }
+
+        return apptRepo.save(appointment);
+    }
+
+    @Override
+    public Appointment updateAppointmentStatus(Long id, String status) {
+        Appointment existing = apptRepo.findById(id).orElse(null);
+        if (existing == null) {
+            return null;
+        }
+        existing.setStatus(status);
+        return apptRepo.save(existing);
+    }
+
+    @Override
+    public void deleteAppointment(Long id) {
         apptRepo.deleteById(id);
-    }
-
-    @Override
-    public void updateStatus(int id, String status) {
-        Optional<Appointment> opt = apptRepo.findById(id);
-        opt.ifPresent(a -> {
-            a.setStatus(status);
-            apptRepo.save(a);
-        });
     }
 }

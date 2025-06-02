@@ -7,11 +7,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    void registerUser(User user);
-    void registerPatient(Patient patient);
-    void registerDoctor(Doctor doctor);
-    Optional<User> findByUsername(String username);
+    User createUser(User user);
+    Patient createPatient(Patient patient);
+    Doctor createDoctor(Doctor doctor);
+    User getUserByUsername(String username);
+    User getUserById(Long userId);
     List<Doctor> findAllDoctors();
-    void updatePatient(Patient patient);
-    void updateDoctor(Doctor doctor);
+    Patient updatePatient(Patient patient);
+    Doctor updateDoctor(Doctor doctor);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+    void deleteUser(Long userId);
+    boolean authenticate(User user);
 }

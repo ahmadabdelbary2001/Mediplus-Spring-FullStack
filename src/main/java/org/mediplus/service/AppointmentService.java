@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AppointmentService {
-    Optional<Appointment> findById(int id);
-    List<Appointment> findAll();
+    Appointment getAppointmentById(Long id);
+    List<Appointment> getAllAppointments();
+    List<Appointment> getAppointmentsByUserId(Long userId);
     List<Appointment> findByDoctorUsername(String doctorUsername);
-    void add(Appointment appointment);
-    void saveAppointment(Appointment appointment);
-    void deleteById(int id);
-    void updateStatus(int id, String status);
+    List<Appointment> findByPatientUsername(String patientUsername);
+    Appointment createAppointment(Appointment appointment);
+    Appointment updateAppointment(Long id, Appointment appointment);
+    Appointment updateAppointmentStatus(Long id, String status);
+    void deleteAppointment(Long id);
 }
