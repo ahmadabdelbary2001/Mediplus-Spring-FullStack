@@ -15,13 +15,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class DoctorControllerTest {
@@ -45,14 +41,21 @@ class DoctorControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/doctors → 200 OK returns list of Doctors")
+    @DisplayName("GET /api/doctors → 200 OK returns list of DoctorResponseDTO")
     void listAllDoctors_success() throws Exception {
-        Doctor d1 = new Doctor("doc1", "doc1@example.com", "pass", "Cardiology", "LIC1", "Loc1");
-        Doctor d2 = new Doctor("doc2", "doc2@example.com", "pass", "Neurology", "LIC2", "Loc2");
+        Doctor d1 = new Doctor("doc1", "doc1@example.com", "password", "Cardiology", "LIC1", "Loc1");
+        d1.setId(3L);
+        d1.setRole("DOCTOR");
+
+        Doctor d2 = new Doctor("doc2", "doc2@example.com", "password", "Neurology", "LIC2", "Loc2");
+        d2.setId(4L);
+        d2.setRole("DOCTOR");
+
         given(doctorService.findAllDoctors()).willReturn(List.of(d1, d2));
 
         mockMvc.perform(get("/api/doctors"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(3))
                 .andExpect(jsonPath("$[0].username").value("doc1"))
                 .andExpect(jsonPath("$[1].username").value("doc2"));
 
@@ -60,31 +63,46 @@ class DoctorControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/doctors → 201 Created returns created Doctor")
+    @DisplayName("POST /api/doctors → 201 Created returns created DoctorResponseDTO")
     void createDoctor_success() throws Exception {
-        Doctor d = new Doctor("newdoc", "newdoc@example.com", "pass", "General", "LIC3", "Loc3");
+        DoctorRequestDTO dto = new DoctorRequestDTO();
+        dto.setUsername("newdoc");
+        dto.setEmail("newdoc@example.com");
+        dto.setPassword("password");
+        dto.setSpecialization("General");
+        dto.setLicenseNumber("LIC3");
+        dto.setClinicLocation("Loc3");
+        dto.setTermsAccepted(true);
+
+        Doctor d = new Doctor("newdoc", "newdoc@example.com", "password", "General", "LIC3", "Loc3");
+        d.setId(5L);
+        d.setRole("DOCTOR");
         given(doctorService.createDoctor(any(Doctor.class))).willReturn(d);
 
         mockMvc.perform(post("/api/doctors")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(d)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username").value("newdoc"));
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.username").value("newdoc"))
+                .andExpect(jsonPath("$.specialization").value("General"));
 
         verify(doctorService, times(1)).createDoctor(any(Doctor.class));
     }
 
     @Test
-    @DisplayName("GET /api/doctors/{id} → 200 OK returns Doctor when found")
+    @DisplayName("GET /api/doctors/{id} → 200 OK returns DoctorResponseDTO when found")
     void getDoctorById_found() throws Exception {
-        Doctor d = new Doctor("docx", "docx@example.com", "pass", "Ortho", "LIC4", "Loc4");
+        Doctor d = new Doctor("docx", "docx@example.com", "password", "Ortho", "LIC4", "Loc4");
         d.setId(7L);
+        d.setRole("DOCTOR");
         given(doctorService.getDoctorById(7L)).willReturn(d);
 
         mockMvc.perform(get("/api/doctors/7"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7))
                 .andExpect(jsonPath("$.username").value("docx"))
-                .andExpect(jsonPath("$.id").value(7));
+                .andExpect(jsonPath("$.specialization").value("Ortho"));
 
         verify(doctorService, times(1)).getDoctorById(7L);
     }
@@ -101,34 +119,51 @@ class DoctorControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/doctors/{id} → 200 OK returns updated Doctor")
+    @DisplayName("PUT /api/doctors/{id} → 200 OK returns updated DoctorResponseDTO")
     void updateDoctor_success() throws Exception {
-        Doctor d = new Doctor("updDoc", "upd@example.com", "pass", "Derm", "LIC5", "Loc5");
+        DoctorRequestDTO dto = new DoctorRequestDTO();
+        dto.setUsername("updDoc");
+        dto.setEmail("upd@example.com");
+        dto.setPassword("password");
+        dto.setSpecialization("Derm");
+        dto.setLicenseNumber("LIC5");
+        dto.setClinicLocation("Loc5");
+        dto.setTermsAccepted(true);
+
+        Doctor d = new Doctor("updDoc", "upd@example.com", "password", "Derm", "LIC5", "Loc5");
         d.setId(8L);
+        d.setRole("DOCTOR");
         given(doctorService.updateDoctor(any(Doctor.class))).willReturn(d);
 
         mockMvc.perform(put("/api/doctors/8")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(d)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(8))
-                .andExpect(jsonPath("$.username").value("updDoc"));
+                .andExpect(jsonPath("$.username").value("updDoc"))
+                .andExpect(jsonPath("$.specialization").value("Derm"));
 
         verify(doctorService, times(1)).updateDoctor(any(Doctor.class));
     }
 
     @Test
-    @DisplayName("PUT /api/doctors/{id} → 200 OK with empty body when update fails")
+    @DisplayName("PUT /api/doctors/{id} → 404 Not Found when update fails")
     void updateDoctor_notFound() throws Exception {
-        Doctor d = new Doctor("updDoc", "upd@example.com", "pass", "Derm", "LIC5", "Loc5");
-        d.setId(8L);
+        DoctorRequestDTO dto = new DoctorRequestDTO();
+        dto.setUsername("updDoc");
+        dto.setEmail("upd@example.com");
+        dto.setPassword("password");
+        dto.setSpecialization("Derm");
+        dto.setLicenseNumber("LIC5");
+        dto.setClinicLocation("Loc5");
+        dto.setTermsAccepted(true);
+
         given(doctorService.updateDoctor(any(Doctor.class))).willReturn(null);
 
         mockMvc.perform(put("/api/doctors/8")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(d)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
 
         verify(doctorService, times(1)).updateDoctor(any(Doctor.class));
     }
