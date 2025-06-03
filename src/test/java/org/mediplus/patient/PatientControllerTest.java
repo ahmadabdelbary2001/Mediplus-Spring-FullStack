@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mediplus.user.UserService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mediplus.user.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -21,13 +21,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class PatientControllerTest {
+
     private MockMvc mockMvc;
 
     @Mock
@@ -48,12 +46,15 @@ class PatientControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/patients/me → 200 OK returns Patient when authenticated")
+    @DisplayName("GET /api/patients/me → 200 OK returns PatientResponseDTO when authenticated")
     void getCurrentPatient_authenticated() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         Patient p = new Patient("jane", "jane@example.com", "pass", dob, "INS-123");
         p.setId(1L);
-        p.setInsuranceId("INS-123");  // تعيين insuranceId صراحة
+        p.setInsuranceId("INS-123");
+        p.setRole("PATIENT");
+        p.setTermsAccepted(true);
+
         given(userService.getUserByUsername("jane")).willReturn(p);
 
         mockMvc.perform(get("/api/patients/me")
@@ -85,11 +86,13 @@ class PatientControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/patients → 200 OK returns list of Patients")
+    @DisplayName("GET /api/patients → 200 OK returns list of PatientResponseDTO")
     void listAllPatients_success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         Patient p1 = new Patient("a", "a@example.com", "pass", dob, "INS-1");
+        p1.setRole("PATIENT");
         Patient p2 = new Patient("b", "b@example.com", "pass", dob, "INS-2");
+        p2.setRole("PATIENT");
         given(patientService.findAllPatients()).willReturn(List.of(p1, p2));
 
         mockMvc.perform(get("/api/patients"))
@@ -101,14 +104,23 @@ class PatientControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/patients → 201 Created returns created Patient")
+    @DisplayName("POST /api/patients → 201 Created returns created PatientResponseDTO")
     void createPatient_success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
-        Patient p = new Patient("new", "new@example.com", "pass", dob, "INS-3");
+        PatientRequestDTO dto = new PatientRequestDTO();
+        dto.setUsername("new");
+        dto.setEmail("new@example.com");
+        dto.setPassword("password"); // تم تغييره من "pass" إلى "password"
+        dto.setDateOfBirth(dob);
+        dto.setInsuranceId("INS-3");
+        dto.setTermsAccepted(true);
+
+        Patient p = new Patient("new", "new@example.com", "password", dob, "INS-3");
         p.setId(5L);
+        p.setRole("PATIENT");
         given(patientService.createPatient(any(Patient.class))).willReturn(p);
 
-        String payload = objectMapper.writeValueAsString(p);
+        String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(post("/api/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
@@ -120,14 +132,23 @@ class PatientControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/patients/{id} → 200 OK returns updated Patient")
+    @DisplayName("PUT /api/patients/{id} → 200 OK returns updated PatientResponseDTO")
     void updatePatient_success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
-        Patient p = new Patient("upd", "upd@example.com", "pass", dob, "INS-4");
+        PatientRequestDTO dto = new PatientRequestDTO();
+        dto.setUsername("upd");
+        dto.setEmail("upd@example.com");
+        dto.setPassword("password"); // تم تغييره هنا أيضًا
+        dto.setDateOfBirth(dob);
+        dto.setInsuranceId("INS-4");
+        dto.setTermsAccepted(true);
+
+        Patient p = new Patient("upd", "upd@example.com", "password", dob, "INS-4");
         p.setId(5L);
+        p.setRole("PATIENT");
         given(patientService.updatePatient(any(Patient.class))).willReturn(p);
 
-        String payload = objectMapper.writeValueAsString(p);
+        String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(put("/api/patients/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
@@ -139,20 +160,24 @@ class PatientControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/patients/{id} → 200 OK when update fails (no 404 behavior)")
+    @DisplayName("PUT /api/patients/{id} → 404 Not Found when update fails")
     void updatePatient_notFound() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
-        Patient p = new Patient("upd", "upd@example.com", "pass", dob, "INS-4");
-        p.setId(5L);
-        // حتى لو فرّغنا الرد خدمة التحديث، الـ Controller يعيد 200 مع null body
+        PatientRequestDTO dto = new PatientRequestDTO();
+        dto.setUsername("upd");
+        dto.setEmail("upd@example.com");
+        dto.setPassword("password"); // تم تغييره هنا أيضًا
+        dto.setDateOfBirth(dob);
+        dto.setInsuranceId("INS-4");
+        dto.setTermsAccepted(true);
+
         given(patientService.updatePatient(any(Patient.class))).willReturn(null);
 
-        String payload = objectMapper.writeValueAsString(p);
+        String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(put("/api/patients/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+                .andExpect(status().isNotFound());
 
         verify(patientService, times(1)).updatePatient(any(Patient.class));
     }

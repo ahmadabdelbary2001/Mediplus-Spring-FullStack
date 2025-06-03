@@ -18,7 +18,6 @@ public class PatientServiceImpl implements PatientService {
                               PasswordEncoder passwordEncoder) {
         this.patientRepository = patientRepository;
         this.passwordEncoder = passwordEncoder;
-        log.info("Initializing Patient Service");
     }
 
     @Override
