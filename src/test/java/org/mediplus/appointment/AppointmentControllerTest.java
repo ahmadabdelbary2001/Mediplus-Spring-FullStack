@@ -1,13 +1,10 @@
-package org.mediplus;
+package org.mediplus.appointment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mediplus.controller.AppointmentController;
-import org.mediplus.model.Appointment;
-import org.mediplus.service.AppointmentService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -22,8 +19,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class AppointmentControllerTest {
 
@@ -40,11 +36,8 @@ class AppointmentControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        // Register the JavaTimeModule so LocalDateTime can be serialized
+        // Register JavaTimeModule so LocalDateTime works
         mapper.registerModule(new JavaTimeModule());
-        // (Optional) If you want ISO strings instead of timestamps:
-        // mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         mockMvc = MockMvcBuilders.standaloneSetup(appointmentController).build();
     }
@@ -200,7 +193,7 @@ class AppointmentControllerTest {
         Appointment existing = new Appointment();
         existing.setId(50L);
         existing.setStatus("PENDING");
-        existing.setDateTime(LocalDateTime.now());
+        existing.setDateTime(LocalDateTime.of(2025, 11, 5, 16, 0));
         existing.setPatientUsername("george");
         existing.setDoctorUsername("docG");
 
@@ -242,8 +235,6 @@ class AppointmentControllerTest {
         existing.setDoctorUsername("docH");
 
         given(apptService.getAppointmentById(60L)).willReturn(existing);
-
-        // For delete, service.deleteAppointment(60L) should be called
         doNothing().when(apptService).deleteAppointment(60L);
 
         mockMvc.perform(delete("/api/appointments/60"))
