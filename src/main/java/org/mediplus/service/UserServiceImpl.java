@@ -10,21 +10,19 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository
-//            , PasswordEncoder passwordEncoder
+            , PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
-//        this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
         log.info("Initializing User Service");
         initializeDemoData();
     }
@@ -53,7 +51,7 @@ public class UserServiceImpl implements UserService {
         } catch (ParseException e) {
             throw new RuntimeException("Invalid demo DOB", e);
         }
-        createPatient(demoPatient);
+        userRepository.save(demoPatient);
     }
 
     private void createDemoDoctor() {
@@ -66,29 +64,7 @@ public class UserServiceImpl implements UserService {
         demoDoc.setSpecialization("General Medicine");
         demoDoc.setLicenseNumber("LIC-0001");
         demoDoc.setClinicLocation("Main Clinic");
-        createDoctor(demoDoc);
-    }
-
-    @Override
-    public User createUser(User user) {
-        log.info("Creating new user: {}", user.getUsername());
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setPassword(user.getPassword());
-        return userRepository.save(user);
-    }
-
-    @Override
-    public Patient createPatient(Patient patient) {
-//        patient.setPassword(passwordEncoder.encode(patient.getPassword()));
-        patient.setPassword(patient.getPassword());
-        return userRepository.save(patient);
-    }
-
-    @Override
-    public Doctor createDoctor(Doctor doctor) {
-//        doctor.setPassword(passwordEncoder.encode(doctor.getPassword()));
-        doctor.setPassword(doctor.getPassword());
-        return userRepository.save(doctor);
+        userRepository.save(demoDoc);
     }
 
     @Override
@@ -102,21 +78,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Doctor> findAllDoctors() {
-        return userRepository.findAllDoctors();
-    }
-
-    @Override
-    public Patient updatePatient(Patient patient) {
-        return userRepository.save(patient);
-    }
-
-    @Override
-    public Doctor updateDoctor(Doctor doctor) {
-        return userRepository.save(doctor);
-    }
-
-    @Override
     public boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
     }
@@ -127,20 +88,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
+    public boolean authenticate(User user) {
+        log.debug("Authenticating user: {}", user.getUsername());
+        User existing = userRepository.findByUsername(user.getUsername()).orElse(null);
+        if (existing == null) {
+            return false;
+        }
+        return passwordEncoder.matches(user.getPassword(), existing.getPassword());
     }
 
     @Override
-    public boolean authenticate(User user) {
-        log.debug("Authenticating user: {}", user.getUsername());
-        User existingUser = userRepository.findByUsername(user.getUsername()).orElse(null);
-
-        if (existingUser == null) {
-            return false;
-        }
-
-//        return passwordEncoder.matches(user.getPassword(), existingUser.getPassword());
-        return existingUser.getPassword().equals(user.getPassword());
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
     }
 }
