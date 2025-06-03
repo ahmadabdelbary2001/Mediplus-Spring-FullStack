@@ -13,13 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.security.Principal;
-import java.text.SimpleDateFormat;
-import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,17 +47,14 @@ class UserControllerTest {
         stored.setId(123L);
         stored.setUsername("charlie");
         stored.setEmail("charlie@example.com");
-        // DateOfBirth and insuranceId not used in authenticate here
         stored.setRole("PATIENT");
         stored.setTermsAccepted(true);
 
         given(userService.getUserByUsername("charlie")).willReturn(stored);
-        given(userService.authenticate(any(User.class))).willReturn(true);
+        given(userService.authenticate("charlie", "pass")).willReturn(true);
 
-        String json = mapper.writeValueAsString(Map.of(
-                "username", "charlie",
-                "password", "pass"
-        ));
+        LoginDTO loginDto = new LoginDTO("charlie", "pass");
+        String json = mapper.writeValueAsString(loginDto);
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,24 +62,25 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("123"));
 
-        verify(userService, times(1)).authenticate(any(User.class));
+        verify(userService, times(1)).authenticate("charlie", "pass");
+        verify(userService, times(1)).getUserByUsername("charlie");
     }
 
     @Test
-    @DisplayName("POST /api/users/login → 401 Unauthorized when failed")
+    @DisplayName("POST /api/users/login → 401 Unauthorized when user not found")
     void login_Failed() throws Exception {
         given(userService.getUserByUsername("charlie")).willReturn(null);
 
-        String json = mapper.writeValueAsString(Map.of(
-                "username", "charlie",
-                "password", "pass"
-        ));
+        LoginDTO loginDto = new LoginDTO("charlie", "pass");
+        String json = mapper.writeValueAsString(loginDto);
 
         mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string("Login failed"));
+
+        verify(userService, times(1)).getUserByUsername("charlie");
     }
 
     @Test
@@ -146,8 +141,7 @@ class UserControllerTest {
     @DisplayName("GET /api/users/me → 401 Unauthorized when not authenticated")
     void meEndpoint_Unauthenticated() throws Exception {
         mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Not authenticated"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -177,5 +171,6 @@ class UserControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(userService, times(1)).getUserById(5L);
+        verify(userService, never()).deleteUser(anyLong());
     }
 }

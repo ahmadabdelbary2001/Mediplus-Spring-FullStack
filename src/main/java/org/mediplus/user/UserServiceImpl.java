@@ -38,13 +38,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean authenticate(User user) {
-        log.debug("Authenticating user: {}", user.getUsername());
-        User existing = userRepository.findByUsername(user.getUsername()).orElse(null);
+    public boolean authenticate(String username, String rawPassword) {
+        log.debug("Authenticating user: {}", username);
+        User existing = userRepository.findByUsername(username).orElse(null);
         if (existing == null) {
             return false;
         }
-        return passwordEncoder.matches(user.getPassword(), existing.getPassword());
+        return passwordEncoder.matches(rawPassword, existing.getPassword());
     }
 
     @Override

@@ -1,14 +1,13 @@
 package org.mediplus.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mediplus.patient.Patient;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -24,14 +23,14 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> payload) {
-        String username = payload.get("username");
-        String password = payload.get("password");
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO payload) {
+        String username = payload.getUsername();
+        String password = payload.getPassword();
         log.debug("Login attempt for user: {}", username);
 
         User existingUser = userService.getUserByUsername(username);
         if (existingUser == null ||
-                !userService.authenticate(new Patient(username, existingUser.getEmail(), password, null, null))
+                !userService.authenticate(existingUser.getUsername(), password)
         ) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
         }
@@ -40,12 +39,13 @@ public class UserController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<User> getUser(@PathVariable String username) {
+    public ResponseEntity<UserResponseDTO> getUser(@PathVariable String username) {
         User u = userService.getUserByUsername(username);
         if (u == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(u);
+        UserResponseDTO dto = new UserResponseDTO(u.getId(), u.getUsername(), u.getEmail(), u.getRole());
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")
@@ -60,19 +60,15 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> me(Principal principal) {
+    public ResponseEntity<UserResponseDTO> me(Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            return ResponseEntity.status(401).body(null);
         }
         User u = userService.getUserByUsername(principal.getName());
         if (u == null) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+            return ResponseEntity.status(404).body(null);
         }
-        return ResponseEntity.ok(Map.of(
-                "id", u.getId(),
-                "username", u.getUsername(),
-                "role", u.getRole(),
-                "email", u.getEmail()
-        ));
+        UserResponseDTO dto = new UserResponseDTO(u.getId(), u.getUsername(), u.getEmail(), u.getRole());
+        return ResponseEntity.ok(dto);
     }
 }
