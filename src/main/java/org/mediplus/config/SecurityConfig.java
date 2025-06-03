@@ -1,81 +1,100 @@
 package org.mediplus.config;
 
-import org.mediplus.service.UserServiceImpl;
+import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
+import org.springframework.web.cors.CorsConfigurationSource;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 public class SecurityConfig {
-//
-//    private final UserServiceImpl userService;
-//
-//    public SecurityConfig(UserServiceImpl userService) {
-//        this.userService = userService;
-//    }
-//
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/", "/home", "/auth/**", "/css/**", "/js/**", "/img/**", "/fonts/**", "/mail/**").permitAll()
-//                        .requestMatchers("/patient/**").hasRole("PATIENT")
-//                        .requestMatchers("/doctor/**").hasRole("DOCTOR")
-//                        .requestMatchers("/get-started").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .httpBasic(Customizer.withDefaults())
-//                .formLogin(form -> form
-//                        .loginPage("/auth/login")
-//                        .successHandler(authenticationSuccessHandler())
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/home")
-//                        .invalidateHttpSession(true)
-//                        .deleteCookies("JSESSIONID")
-//                        .permitAll()
-//                );
-//
-//        return http.build();
-//    }
-//
-//    @Bean
-//    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-//        return (request, response, authentication) -> {
-//            if (authentication.getAuthorities().stream()
-//                    .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR"))) {
-//                response.sendRedirect("/doctor/dashboard");
-//            } else {
-//                response.sendRedirect("/patient/dashboard");
-//            }
-//        };
-//    }
-//
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        return username -> {
-//            org.mediplus.model.User user = userService
-//                    .findByUsername(username)
-//                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//            User.UserBuilder builder = User.withUsername(user.getUsername())
-//                    .password(user.getPassword())
-//                    .roles(user.getRole());
-//            return builder.build();
-//        };
-//    }
-//
-//    @Bean
-//    public SpringSecurityDialect springSecurityDialect() {
-//        return new SpringSecurityDialect();
-//    }
 
+    private final CustomUserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
+    private final CorsConfigurationSource corsConfigurationSource;
+
+    public SecurityConfig(CustomUserDetailsService uds,
+                          PasswordEncoder encoder,
+                          CorsConfigurationSource corsSource) {
+        this.userDetailsService = uds;
+        this.passwordEncoder      = encoder;
+        this.corsConfigurationSource = corsSource;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .sessionFixation().migrateSession()
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/authenticate").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/patients/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/appointments").permitAll()
+                        .requestMatchers("/api/users/me").hasAnyRole("PATIENT","DOCTOR","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/patients/me").hasAnyRole("PATIENT","ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/patients/**").hasAnyRole("PATIENT","ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/patients").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/patients").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/patients/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/doctors/**").hasRole("ADMIN")
+                        .requestMatchers("/api/appointments/**").hasAnyRole("PATIENT","DOCTOR","ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginProcessingUrl("/authenticate")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .successHandler((req, res, auth) -> {
+                            log.info("Login successful for user: {}", auth.getName());
+                            Cookie sessionCookie = new Cookie("JSESSIONID", req.getSession().getId());
+                            sessionCookie.setPath("/");
+                            sessionCookie.setHttpOnly(true);
+                            sessionCookie.setSecure(true);
+                            sessionCookie.setAttribute("SameSite", "None");
+
+                            res.addCookie(sessionCookie);
+                            res.setStatus(HttpStatus.OK.value());
+                            res.setContentType("text/plain");
+                            res.getWriter().write("Login successful");
+                        })
+                        .failureHandler((req, res, ex) -> {
+                            log.error("Login failed: {}", ex.getMessage());
+                            res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            res.setContentType("text/plain");
+                            res.getWriter().write("Login failed: " + ex.getMessage());
+                        })
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, authEx) -> {
+                            log.warn("Unauthorized access: {}", authEx.getMessage());
+                            res.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized");
+                        })
+                );
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder);
+        return builder.build();
+    }
 }
