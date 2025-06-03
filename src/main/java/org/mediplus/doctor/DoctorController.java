@@ -1,8 +1,6 @@
-package org.mediplus.controller;
+package org.mediplus.doctor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mediplus.model.Doctor;
-import org.mediplus.service.DoctorService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

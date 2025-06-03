@@ -1,10 +1,10 @@
 package org.mediplus;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mediplus.model.Doctor;
-import org.mediplus.model.Patient;
-import org.mediplus.model.User;
-import org.mediplus.repository.UserRepository;
+import org.mediplus.doctor.Doctor;
+import org.mediplus.patient.Patient;
+import org.mediplus.user.User;
+import org.mediplus.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

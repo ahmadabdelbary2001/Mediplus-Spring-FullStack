@@ -1,6 +1,5 @@
-package org.mediplus.repository;
+package org.mediplus.patient;
 
-import org.mediplus.model.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

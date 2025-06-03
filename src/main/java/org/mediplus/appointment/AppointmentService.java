@@ -1,9 +1,6 @@
-package org.mediplus.service;
-
-import org.mediplus.model.Appointment;
+package org.mediplus.appointment;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AppointmentService {
     Appointment getAppointmentById(Long id);

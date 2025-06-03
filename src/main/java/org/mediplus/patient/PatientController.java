@@ -1,11 +1,9 @@
-package org.mediplus.controller;
+package org.mediplus.patient;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.mediplus.model.Patient;
-import org.mediplus.model.User;
-import org.mediplus.service.PatientService;
-import org.mediplus.service.UserService;
+import org.mediplus.user.User;
+import org.mediplus.user.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

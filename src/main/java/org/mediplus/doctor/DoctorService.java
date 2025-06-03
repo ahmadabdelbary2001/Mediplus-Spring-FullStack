@@ -1,6 +1,4 @@
-package org.mediplus.service;
-
-import org.mediplus.model.Doctor;
+package org.mediplus.doctor;
 
 import java.util.List;
 

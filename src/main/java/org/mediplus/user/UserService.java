@@ -1,6 +1,4 @@
-package org.mediplus.service;
-
-import org.mediplus.model.User;
+package org.mediplus.user;
 
 public interface UserService {
     User getUserByUsername(String username);

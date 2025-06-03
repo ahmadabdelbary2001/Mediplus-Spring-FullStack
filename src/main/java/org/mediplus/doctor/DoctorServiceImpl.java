@@ -1,8 +1,6 @@
-package org.mediplus.service;
+package org.mediplus.doctor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mediplus.model.Doctor;
-import org.mediplus.repository.DoctorRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

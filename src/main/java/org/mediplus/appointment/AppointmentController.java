@@ -1,8 +1,6 @@
-package org.mediplus.controller;
+package org.mediplus.appointment;
 
 import jakarta.validation.Valid;
-import org.mediplus.model.Appointment;
-import org.mediplus.service.AppointmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

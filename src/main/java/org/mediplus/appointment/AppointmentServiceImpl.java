@@ -1,11 +1,8 @@
-package org.mediplus.service;
+package org.mediplus.appointment;
 
-import org.mediplus.model.Appointment;
-import org.mediplus.repository.AppointmentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
