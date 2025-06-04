@@ -1,4 +1,5 @@
 // ======================== assets/js/api/auth/register.js ========================
+
 const REGISTER_API_URL = "http://localhost:8080/api/patients/register";
 
 $(function() {

@@ -1,4 +1,4 @@
-// ==================== assets/js/api/utils.js (common.js) =====================
+// ==================== assets/js/api/utils.js =====================
 
 // ======================== AJAX Handling ========================
 function ajaxRequest(url, method, data, headers = {}) {
@@ -49,18 +49,9 @@ function logout() {
 
 // ====================== UI Initialization ======================
 $(function() {
-    // show/hide add-product button
-    if (isAdminLoggedIn()) $('#add-product-button').show();
-    else $('#add-product-button').hide();
-
     // bind logout
     $('#logout-button').on('click', e => {
         e.preventDefault();
         logout();
     });
-});
-
-// =========================== Header ============================
-$(function() {
-    $('#header-placeholder').load('header.html');
 });

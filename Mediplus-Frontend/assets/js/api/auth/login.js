@@ -1,4 +1,5 @@
 // ======================== assets/js/api/auth/login.js ========================
+
 $(function() {
     $('#loginForm').on('submit', function(e) {
         e.preventDefault();
