@@ -62,33 +62,25 @@
 <!-- End Preloader -->
 
 <!-- Header Area -->
-<header class="header" th:fragment="header">
+<header class="header">
     <div class="header-inner">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center pb-3">
-                <!-- Logo -->
-                <div class="logo">
-                    <a th:href="@{/home}">
-                        <img src="/img/logo.png" alt="MEDIPLUS">
-                    </a>
-                </div>
-                <!-- Contact Button -->
-                <div class="get-quote">
-                    <a th:href="@{/contact-us}" class="btn">
-                        CONTACT US
-                    </a>
-                </div>
+        <div class="container d-flex justify-content-between align-items-center pb-3">
+            <div class="logo">
+                <a href="../index.html"><img src="../assets/img/logo.png" alt="MEDIPLUS"></a>
+            </div>
+            <div class="get-quote">
+                <a href="/contact-us" class="btn">CONTACT US</a>
             </div>
         </div>
     </div>
 </header>
 
-<main th:fragment="content">
+<main>
     <!-- page-specific content here -->
 </main>
 
 <!-- Footer Area -->
-<footer id="footer" class="footer" th:fragment="footer">
+<footer id="footer" class="footer">
     <!-- Footer Top -->
     <div class="footer-top">
         <div class="container">
@@ -176,7 +168,7 @@
 <!--/ End Footer Area -->
 
 <!-- Scripts Fragment -->
-<div th:fragment="scripts">
+<div>
     <!-- jquery Min JS -->
     <script src="/js/jquery.min.js"></script>
     <!-- jquery Migrate JS -->

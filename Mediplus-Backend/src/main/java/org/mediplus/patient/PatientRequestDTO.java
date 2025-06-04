@@ -28,7 +28,7 @@ public class PatientRequestDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date dateOfBirth;
 
-    @NotBlank(message = "Insurance ID is required")
+    // @NotBlank(message = "Insurance ID is required")
     private String insuranceId;
 
     private Boolean termsAccepted;
