@@ -36,7 +36,6 @@ class AppointmentControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        // Register JavaTimeModule so LocalDateTime works
         mapper.registerModule(new JavaTimeModule());
 
         mockMvc = MockMvcBuilders.standaloneSetup(appointmentController).build();
@@ -107,7 +106,7 @@ class AppointmentControllerTest {
     @Test
     @DisplayName("POST /api/appointments → 201 Created")
     void createAppointment_Success() throws Exception {
-        Appointment incoming = new Appointment();
+        AppointmentRequestDTO incoming = new AppointmentRequestDTO();
         incoming.setDateTime(LocalDateTime.of(2025, 8, 5, 15, 0));
         incoming.setStatus("PENDING");
         incoming.setPatientUsername("dan");
@@ -138,8 +137,7 @@ class AppointmentControllerTest {
     @Test
     @DisplayName("PUT /api/appointments/{id} → 200 OK when update succeeds")
     void updateAppointment_Success() throws Exception {
-        Appointment updateRequest = new Appointment();
-        updateRequest.setId(40L);
+        AppointmentRequestDTO updateRequest = new AppointmentRequestDTO();
         updateRequest.setDateTime(LocalDateTime.of(2025, 9, 10, 10, 0));
         updateRequest.setStatus("CANCELLED");
         updateRequest.setPatientUsername("erin");
@@ -169,7 +167,7 @@ class AppointmentControllerTest {
     @Test
     @DisplayName("PUT /api/appointments/{id} → 404 Not Found if not present")
     void updateAppointment_NotFound() throws Exception {
-        Appointment updateRequest = new Appointment();
+        AppointmentRequestDTO updateRequest = new AppointmentRequestDTO();
         updateRequest.setDateTime(LocalDateTime.of(2025, 10, 1, 12, 0));
         updateRequest.setStatus("PENDING");
         updateRequest.setPatientUsername("fiona");
@@ -188,7 +186,7 @@ class AppointmentControllerTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/appointments/{id}/status → 204 No Content on success")
+    @DisplayName("PATCH /api/appointments/{id}/status → 204 No Content")
     void updateStatus_Success() throws Exception {
         Appointment existing = new Appointment();
         existing.setId(50L);
@@ -214,7 +212,7 @@ class AppointmentControllerTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/appointments/{id}/status → 404 if not found")
+    @DisplayName("PATCH /api/appointments/{id}/status → 404 Not Found")
     void updateStatus_NotFound() throws Exception {
         given(apptService.updateAppointmentStatus(99L, "CANCELLED")).willReturn(null);
 

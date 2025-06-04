@@ -1,12 +1,12 @@
 package org.mediplus.appointment;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -21,35 +21,40 @@ public class AppointmentController {
     }
 
     @GetMapping
-    public List<Appointment> listAll() {
-        return apptService.getAllAppointments();
+    public List<AppointmentResponseDTO> listAll() {
+        return apptService.getAllAppointments().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Appointment> getById(@PathVariable Long id) {
+    public ResponseEntity<AppointmentResponseDTO> getById(@PathVariable Long id) {
         Appointment appt = apptService.getAppointmentById(id);
         if (appt == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(appt);
+        return ResponseEntity.ok(toDTO(appt));
     }
 
     @PostMapping
-    public ResponseEntity<Appointment> create(@Valid @RequestBody Appointment appointment) {
-        Appointment created = apptService.createAppointment(appointment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<AppointmentResponseDTO> create(@Valid @RequestBody AppointmentRequestDTO dto) {
+        Appointment toSave = fromDTO(dto);
+        Appointment created = apptService.createAppointment(toSave);
+        return ResponseEntity.status(201).body(toDTO(created));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Appointment> update(
+    public ResponseEntity<AppointmentResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody Appointment appointment) {
+            @Valid @RequestBody AppointmentRequestDTO dto) {
 
-        Appointment updated = apptService.updateAppointment(id, appointment);
+        Appointment toUpdate = fromDTO(dto);
+        toUpdate.setId(id);
+        Appointment updated = apptService.updateAppointment(id, toUpdate);
         if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(toDTO(updated));
     }
 
     @PatchMapping("/{id}/status")
@@ -59,7 +64,7 @@ public class AppointmentController {
 
         Appointment updated = apptService.updateAppointmentStatus(id, status);
         if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
     }
@@ -72,5 +77,26 @@ public class AppointmentController {
         }
         apptService.deleteAppointment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Helper functions for converting between DTO and Appointment entity
+    private Appointment fromDTO(AppointmentRequestDTO dto) {
+        return new Appointment(
+                null,
+                dto.getDateTime(),
+                dto.getStatus(),
+                dto.getPatientUsername(),
+                dto.getDoctorUsername()
+        );
+    }
+
+    private AppointmentResponseDTO toDTO(Appointment appt) {
+        return new AppointmentResponseDTO(
+                appt.getId(),
+                appt.getDateTime(),
+                appt.getStatus(),
+                appt.getPatientUsername(),
+                appt.getDoctorUsername()
+        );
     }
 }
