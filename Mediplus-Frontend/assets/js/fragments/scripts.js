@@ -8,6 +8,7 @@
         './assets/js/vendor/easing.js',
         './assets/js/vendor/colors.js',
         './assets/js/vendor/popper.min.js',
+        './assets/js/vendor/bootstrap.bundle.min.js',
         './assets/js/vendor/bootstrap-datepicker.js',
         './assets/js/vendor/jquery.nav.js',
         './assets/js/vendor/slicknav.min.js',

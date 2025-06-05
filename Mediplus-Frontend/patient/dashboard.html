@@ -1,11 +1,16 @@
 <!-- patient/dashboard.html -->
 <!DOCTYPE html>
-<html class="no-js" lang="zxx" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/patient :: head(pageTitle='Dashboard')}"></head>
+<html lang="en">
+<head>
+    <script src="../assets/js/fragments/head.js" type="module"></script>
+    <script src="../assets/js/fragments/preloader.js" type="module"></script>
+    <script src="../assets/js/fragments/patient-header.js" type="module"></script>
+    <script src="../assets/js/fragments/footer.js" type="module"></script>
+    <app-head data-page-title="Dashboard"></app-head>
+</head>
 <body>
-
-<div th:replace="~{fragments/patient :: preloader}"></div>
-<div th:replace="~{fragments/patient :: header(activePage='dashboard')}"></div>
+<app-preloader></app-preloader>
+<app-header></app-header>
 
 <section class="py-5">
     <div class="container">
@@ -16,7 +21,7 @@
                     <div class="card-body">
                         <h5>Upcoming Visits</h5>
                         <h2>2</h2>
-                        <a th:href="@{/patient/appointments}" class="text-white">View All</a>
+                        <a href="appointments.html" class="text-white">View All</a>
                     </div>
                 </div>
             </div>
@@ -25,7 +30,7 @@
                     <div class="card-body">
                         <h5>Pending Prescriptions</h5>
                         <h2>1</h2>
-                        <a th:href="@{/patient/prescriptions}" class="text-white">Manage</a>
+                        <a href="prescriptions.html" class="text-white">Manage</a>
                     </div>
                 </div>
             </div>
@@ -34,7 +39,7 @@
                     <div class="card-body">
                         <h5>Unread Alerts</h5>
                         <h2>3</h2>
-                        <a th:href="@{/patient/alerts}" class="text-dark">Check</a>
+                        <a href="" class="text-dark">Check</a>
                     </div>
                 </div>
             </div>
@@ -43,26 +48,22 @@
         <!-- Quick Actions -->
         <div class="row quick-actions mt-5 g-3">
             <div class="col-md-3">
-                <a th:href="@{/patient/add-new-appointment}"
-                   class="btn btn-outline-primary w-100">
+                <a href="add-new-appointment.html" class="btn btn-outline-primary w-100">
                     <i class="icofont-plus-circle"></i> Book Appointment
                 </a>
             </div>
             <div class="col-md-3">
-                <a th:href="@{/patient/appointments}"
-                   class="btn btn-outline-success w-100">
+                <a href="appointments.html" class="btn btn-outline-success w-100">
                     <i class="icofont-calendar"></i> My Appointments
                 </a>
             </div>
             <div class="col-md-3">
-                <a th:href="@{/patient/records}"
-                   class="btn btn-outline-warning w-100">
+                <a href="records.html" class="btn btn-outline-warning w-100">
                     <i class="icofont-file-text"></i> Medical Records
                 </a>
             </div>
             <div class="col-md-3">
-                <a th:href="@{/patient/profile}"
-                   class="btn btn-outline-secondary w-100">
+                <a href="profile.html" class="btn btn-outline-secondary w-100">
                     <i class="icofont-user-alt-3"></i> My Profile
                 </a>
             </div>
@@ -70,7 +71,46 @@
     </div>
 </section>
 
-<div th:replace="~{fragments/patient :: scripts}"></div>
-
+<app-footer></app-footer>
+<!-- jquery Min JS -->
+<script src="../assets/js/vendor/jquery.min.js"></script>
+<!-- jquery Migrate JS -->
+<script src="../assets/js/vendor/jquery-migrate-3.0.0.js"></script>
+<!-- jquery Ui JS -->
+<script src="../assets/js/vendor/jquery-ui.min.js"></script>
+<!-- Easing JS -->
+<script src="../assets/js/vendor/easing.js"></script>
+<!-- Color JS -->
+<script src="../assets/js/vendor/colors.js"></script>
+<!-- Popper JS -->
+<script src="../assets/js/vendor/popper.min.js"></script>
+<!-- Bootstrap Datepicker JS -->
+<script src="../assets/js/vendor/bootstrap-datepicker.js"></script>
+<!-- Jquery Nav JS -->
+<script src="../assets/js/vendor/jquery.nav.js"></script>
+<!-- Slicknav JS -->
+<script src="../assets/js/vendor/slicknav.min.js"></script>
+<!-- ScrollUp JS -->
+<script src="../assets/js/vendor/jquery.scrollUp.min.js"></script>
+<!-- Niceselect JS -->
+<script src="../assets/js/vendor/niceselect.js"></script>
+<!-- Tilt Jquery JS -->
+<script src="../assets/js/vendor/tilt.jquery.min.js"></script>
+<!-- Owl Carousel JS -->
+<script src="../assets/js/vendor/owl-carousel.js"></script>
+<!-- counterup JS -->
+<script src="../assets/js/vendor/jquery.counterup.min.js"></script>
+<!-- Steller JS -->
+<script src="../assets/js/vendor/steller.js"></script>
+<!-- Wow JS -->
+<script src="../assets/js/vendor/wow.min.js"></script>
+<!-- Magnific Popup JS -->
+<script src="../assets/js/vendor/jquery.magnific-popup.min.js"></script>
+<!-- Counter Up CDN JS -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../assets/js/vendor/bootstrap.min.js"></script>
+<!-- Main JS -->
+<script src="../assets/js/vendor/main.js"></script>
 </body>
 </html>
