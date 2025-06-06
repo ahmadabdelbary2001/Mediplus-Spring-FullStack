@@ -91,7 +91,7 @@ class AppHeader extends HTMLElement {
                            aria-labelledby="messagesDropdown">
                         <h6 class="dropdown-header text-center bg-light">Recent Messages</h6>
                         <div class="dropdown-item d-flex align-items-center">
-                          <img src="../assets/img/patient-thumb.jpg" class="rounded-circle me-3" width="40" alt="Patient">
+                          <img src="../assets/img/doctor-thumb.jpg" class="rounded-circle me-3" width="40" alt="doctor">
                           <div>
                             <p class="mb-0 small">Need urgent consultation</p>
                             <span class="text-muted">Dr. Ahmed</span>
@@ -110,7 +110,7 @@ class AppHeader extends HTMLElement {
                         <i class="icofont-user icofont-md text-dark"></i>
                       </a>
                       <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in">
-                        <a class="dropdown-item" href="../patient/profile.html">
+                        <a class="dropdown-item" href="../doctor/profile.html">
                           <i class="icofont-user-alt-3 me-2 text-primary"></i> Profile
                         </a>
                         <a class="dropdown-item" href="#">

@@ -1,44 +1,51 @@
-<!-- patient/profile.html -->
+<!-- doctor/edit-profile.html -->
 <!DOCTYPE html>
 <html lang="en">
     <head>
     <script src="../assets/js/fragments/head.js" type="module"></script>
     <script src="../assets/js/fragments/preloader.js" type="module"></script>
-    <script src="../assets/js/fragments/patient-header.js" type="module"></script>
+    <script src="../assets/js/fragments/doctor-header.js" type="module"></script>
     <script src="../assets/js/fragments/footer.js" type="module"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <app-head data-page-title="Profile"></app-head>
+        <app-head data-page-title="Edit Profile"></app-head>
     </head>
     <body>
         <app-preloader></app-preloader>
         <app-header></app-header>
 
+
   <section class="py-5">
     <div class="container">
       <div class="card shadow-sm mx-auto" style="max-width: 600px;">
         <div class="card-body">
-          <h3 class="card-title text-center mb-4">My Profile</h3>
-          <dl class="row">
-            <dt class="col-sm-4">Username</dt>
-            <dd class="col-sm-8" id="profile-username">[loading...]</dd>
+          <h3 class="card-title text-center mb-4">Edit Profile</h3>
+          <form id="editProfileForm" novalidate>
+            <!-- حقول الإدخال -->
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input id="input-username" type="text" class="form-control" required />
+              <div class="invalid-feedback">Please enter a username.</div>
+            </div>
 
-            <dt class="col-sm-4">Email</dt>
-            <dd class="col-sm-8" id="profile-email">[loading...]</dd>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input id="input-email" type="email" class="form-control" required />
+              <div class="invalid-feedback">Please enter a valid email.</div>
+            </div>
 
-            <dt class="col-sm-4">Date of Birth</dt>
-            <dd class="col-sm-8" id="profile-dob">[loading...]</dd>
-          </dl>
-          <div class="text-center mt-4">
-            <a href="edit-profile.html" class="btn btn-outline-primary">Edit Profile</a>
-          </div>
+            <div class="d-flex justify-content-center mt-4">
+              <button type="submit" class="btn btn-primary btn-lg">Save Changes</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </section>
 
+
         <app-footer></app-footer>
         <script src="../assets/js/api/utils.js" async></script>
-        <script src="../assets/js/api/patient/profile.js" async></script>
+        <script src="../assets/js/api/doctor/edit-profile.js" async></script>
         <!-- jquery Min JS -->
         <script src="../assets/js/vendor/jquery.min.js"></script>
         <!-- jquery Migrate JS -->

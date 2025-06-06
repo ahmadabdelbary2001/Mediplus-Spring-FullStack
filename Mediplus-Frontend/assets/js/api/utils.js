@@ -96,6 +96,14 @@ function logout() {
     window.location.replace('login.html');
 }
 
+// ====================== Require Login Auto-Check ======================
+$(function() {
+    const requiresLogin = document.body.dataset.requiresLogin === 'true';
+    if (requiresLogin && !isLoggedIn()) {
+        window.location.replace('auth/login.html');
+    }
+});
+
 // ====================== UI Initialization ======================
 $(function() {
     // bind logout

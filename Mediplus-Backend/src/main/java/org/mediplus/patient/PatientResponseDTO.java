@@ -2,6 +2,7 @@ package org.mediplus.patient;
 
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -11,14 +12,21 @@ public class PatientResponseDTO {
     private String email;
     private String insuranceId;
     private String role;
+    private Date dateOfBirth;
 
-    public PatientResponseDTO() {}
+    public PatientResponseDTO() { }
 
-    public PatientResponseDTO(Long id, String username, String email, String insuranceId, String role) {
+    public PatientResponseDTO(Long id,
+                              String username,
+                              String email,
+                              String insuranceId,
+                              String role,
+                              Date dateOfBirth) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.insuranceId = insuranceId;
         this.role = role;
+        this.dateOfBirth = dateOfBirth;
     }
 }

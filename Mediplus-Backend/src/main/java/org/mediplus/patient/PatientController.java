@@ -70,14 +70,18 @@ public class PatientController {
     @PutMapping("/{id}")
     public ResponseEntity<PatientResponseDTO> updatePatient(
             @PathVariable Long id,
-            @Valid @RequestBody PatientRequestDTO dto) {
+            @Valid @RequestBody PatientUpdateDTO dto) {
 
-        Patient toUpdate = fromDTO(dto);
-        toUpdate.setId(id);
-        Patient updated = patientService.updatePatient(toUpdate);
-        if (updated == null) {
+        Patient existing = patientService.getPatientById(id);
+        if (existing == null) {
             return ResponseEntity.notFound().build();
         }
+
+        existing.setUsername(dto.getUsername());
+        existing.setEmail(dto.getEmail());
+        existing.setDateOfBirth(dto.getDateOfBirth());
+
+        Patient updated = patientService.updatePatient(existing);
         return ResponseEntity.ok(toDTO(updated));
     }
 
@@ -106,7 +110,8 @@ public class PatientController {
                 p.getUsername(),
                 p.getEmail(),
                 p.getInsuranceId(),
-                p.getRole()
+                p.getRole(),
+                p.getDateOfBirth()
         );
     }
 }
