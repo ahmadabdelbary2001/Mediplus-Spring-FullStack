@@ -6,10 +6,10 @@
     <script src="../assets/js/fragments/preloader.js" type="module"></script>
     <script src="../assets/js/fragments/doctor-header.js" type="module"></script>
     <script src="../assets/js/fragments/footer.js" type="module"></script>
-    <script src="../assets/js/fragments/scripts.js" type="module"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <app-head data-page-title="Dashboard"></app-head>
 </head>
-<body>
+<body data-requires-login="true">
 <app-preloader></app-preloader>
 <app-header></app-header>
 
@@ -71,6 +71,7 @@
 </section>
 
 <app-footer></app-footer>
+<script src="../assets/js/api/utils.js" async></script>
 <!-- jquery Min JS -->
 <script src="../assets/js/vendor/jquery.min.js"></script>
 <!-- jquery Migrate JS -->

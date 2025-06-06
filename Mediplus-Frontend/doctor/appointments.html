@@ -1,17 +1,23 @@
 <!-- doctor/appointments.html -->
 <!DOCTYPE html>
-<html class="no-js" lang="zxx" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/doctor :: head(pageTitle='Appointments')}"></head>
-<body>
-
-<div th:replace="~{fragments/doctor :: preloader}"></div>
-<div th:replace="~{fragments/doctor :: header(activePage='appointments')}"></div>
+<html lang="en">
+<head>
+  <script src="../assets/js/fragments/head.js" type="module"></script>
+  <script src="../assets/js/fragments/preloader.js" type="module"></script>
+  <script src="../assets/js/fragments/doctor-header.js" type="module"></script>
+  <script src="../assets/js/fragments/footer.js" type="module"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <app-head data-page-title="Appointment Requests"></app-head>
+</head>
+<body data-requires-login="true">
+<app-preloader></app-preloader>
+<app-header></app-header>
 
 <section class="py-5">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2><i class="icofont-patient-bed"></i> Appointment Requests</h2>
-      <a th:href="@{/doctor/schedule}" class="btn btn-outline-primary">
+      <a href="schedule.html" class="btn btn-outline-primary">
         <i class="icofont-calendar"></i> Manage Schedule
       </a>
     </div>
@@ -26,41 +32,8 @@
             <th class="text-end">Actions</th>
           </tr>
           </thead>
-          <tbody>
-          <tr th:each="appt : ${requests}">
-            <td th:text="${appt.patientUsername}"></td>
-            <td th:text="${#temporals.format(appt.dateTime, 'dd/MM/yyyy HH:mm')}"></td>
-            <td>
-                <span class="badge"
-                      th:classappend="${appt.status == 'PENDING'
-                                      ? ' bg-warning text-dark'
-                                      : (appt.status == 'CONFIRMED'
-                                         ? ' bg-success'
-                                         : ' bg-danger')}"
-                      th:text="${appt.status}"></span>
-            </td>
-            <td class="text-end">
-              <form th:action="@{/doctor/appointments/confirm/{id}(id=${appt.id})}"
-                    method="post" class="d-inline"
-                    th:if="${appt.status == 'PENDING'}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button class="btn btn-sm btn-success">
-                  <i class="icofont-check"></i> Accept
-                </button>
-              </form>
-              <form th:action="@{/doctor/appointments/cancel/{id}(id=${appt.id})}"
-                    method="post" class="d-inline"
-                    th:if="${appt.status == 'PENDING'}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <button class="btn btn-sm btn-danger">
-                  <i class="icofont-close"></i> Decline
-                </button>
-              </form>
-            </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(requests)}">
-            <td colspan="4" class="text-center text-muted">No appointment requests at the moment.</td>
-          </tr>
+          <tbody id="apptBody">
+          <!-- يتم تعبئة المحتوى عبر JavaScript -->
           </tbody>
         </table>
       </div>
@@ -68,7 +41,49 @@
   </div>
 </section>
 
-<div th:replace="~{fragments/doctor :: scripts}"></div>
-
+<app-footer></app-footer>
+<app-scripts></app-scripts>
+<script src="../assets/js/api/utils.js" async></script>
+<script src="../assets/js/api/doctor/appointments.js" async></script>
+<!-- jquery Min JS -->
+<script src="../assets/js/vendor/jquery.min.js"></script>
+<!-- jquery Migrate JS -->
+<script src="../assets/js/vendor/jquery-migrate-3.0.0.js"></script>
+<!-- jquery Ui JS -->
+<script src="../assets/js/vendor/jquery-ui.min.js"></script>
+<!-- Easing JS -->
+<script src="../assets/js/vendor/easing.js"></script>
+<!-- Color JS -->
+<script src="../assets/js/vendor/colors.js"></script>
+<!-- Popper JS -->
+<script src="../assets/js/vendor/popper.min.js"></script>
+<!-- Bootstrap Datepicker JS -->
+<script src="../assets/js/vendor/bootstrap-datepicker.js"></script>
+<!-- Jquery Nav JS -->
+<script src="../assets/js/vendor/jquery.nav.js"></script>
+<!-- Slicknav JS -->
+<script src="../assets/js/vendor/slicknav.min.js"></script>
+<!-- ScrollUp JS -->
+<script src="../assets/js/vendor/jquery.scrollUp.min.js"></script>
+<!-- Niceselect JS -->
+<script src="../assets/js/vendor/niceselect.js"></script>
+<!-- Tilt Jquery JS -->
+<script src="../assets/js/vendor/tilt.jquery.min.js"></script>
+<!-- Owl Carousel JS -->
+<script src="../assets/js/vendor/owl-carousel.js"></script>
+<!-- counterup JS -->
+<script src="../assets/js/vendor/jquery.counterup.min.js"></script>
+<!-- Steller JS -->
+<script src="../assets/js/vendor/steller.js"></script>
+<!-- Wow JS -->
+<script src="../assets/js/vendor/wow.min.js"></script>
+<!-- Magnific Popup JS -->
+<script src="../assets/js/vendor/jquery.magnific-popup.min.js"></script>
+<!-- Counter Up CDN JS -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../assets/js/vendor/bootstrap.min.js"></script>
+<!-- Main JS -->
+<script src="../assets/js/vendor/main.js"></script>
 </body>
 </html>

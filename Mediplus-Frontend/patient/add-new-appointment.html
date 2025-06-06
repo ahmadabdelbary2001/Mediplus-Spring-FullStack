@@ -1,54 +1,99 @@
 <!-- patient/add-new-appointment.html -->
 <!DOCTYPE html>
-<html class="no-js" lang="zxx" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/patient :: head(pageTitle='Add Appointment')}"></head>
-<body>
+<html lang="en">
+<head>
+  <script src="../assets/js/fragments/head.js" type="module"></script>
+  <script src="../assets/js/fragments/preloader.js" type="module"></script>
+  <script src="../assets/js/fragments/patient-header.js" type="module"></script>
+  <script src="../assets/js/fragments/footer.js" type="module"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <app-head data-page-title="Add Appointment"></app-head>
+</head>
+<body data-requires-login="true">
+<app-preloader></app-preloader>
+<app-header></app-header>
 
-<div th:replace="~{fragments/patient :: preloader}"></div>
-<div th:replace="~{fragments/patient :: header(activePage='appointments')}"></div>
+    <section class="py-5">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3>+ Add New Appointment</h3>
+          <a href="appointments.html" class="btn btn-secondary">Back to Appointments</a>
+        </div>
 
-<section class="py-5">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3>+ Add New Appointment</h3>
-      <a th:href="@{/patient/appointments}" class="btn btn-secondary">Back to Appointments</a>
-    </div>
-
-    <form th:action="@{/patient/add-new-appointment}" th:object="${appointment}" method="post">
-      <div class="row mb-3">
-        <label for="dateTime" class="col-sm-2 col-form-label">Date &amp; Time</label>
-        <div class="col-sm-10">
-          <input type="datetime-local" id="dateTime" class="form-control" th:field="*{dateTime}" required />
-          <div class="invalid-feedback" th:if="${#fields.hasErrors('dateTime')}">
-            Please select a valid date and time
+        <form id="addAppointmentForm" novalidate>
+          <div class="row mb-3">
+            <label for="dateTime" class="col-sm-2 col-form-label">Date &amp; Time</label>
+            <div class="col-sm-10">
+              <input type="datetime-local" id="dateTime" class="form-control" required />
+              <div class="invalid-feedback">
+                Please select a valid date and time
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div class="row mb-3">
+            <label for="doctor" class="col-sm-2 col-form-label">Doctor</label>
+            <div class="col-sm-10">
+              <select id="doctor" class="form-select" required>
+                <option value="">Select a Doctor</option>
+                <!-- الخيارات ستُملأ بواسطة JS -->
+              </select>
+              <div class="invalid-feedback">
+                Please select a doctor
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-sm-10 offset-sm-2">
+              <button type="submit" class="btn btn-success">Submit</button>
+              <a href="appointments.html" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+          </div>
+        </form>
       </div>
+    </section>
 
-      <div class="row mb-3">
-        <label for="doctor" class="col-sm-2 col-form-label">Doctor</label>
-        <div class="col-sm-10">
-          <select id="doctor" class="form-select" th:field="*{doctorUsername}" required>
-            <option value="">Select a Doctor</option>
-            <option th:each="doc : ${doctors}"
-                    th:value="${doc.username}"
-                    th:text="${doc.username + ' - ' + doc.specialization}">
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <div class="col-sm-10 offset-sm-2">
-          <button type="submit" class="btn btn-success">Submit</button>
-          <a th:href="@{/patient/appointments}" class="btn btn-outline-secondary ms-2">Cancel</a>
-        </div>
-      </div>
-    </form>
-  </div>
-</section>
-
-<div th:replace="~{fragments/patient :: scripts}"></div>
-
+<app-footer></app-footer>
+<script src="../assets/js/api/utils.js" async></script>
+<script src="../assets/js/api/patient/add-new-appointment.js" async></script>
+<!-- jquery Min JS -->
+<script src="../assets/js/vendor/jquery.min.js"></script>
+<!-- jquery Migrate JS -->
+<script src="../assets/js/vendor/jquery-migrate-3.0.0.js"></script>
+<!-- jquery Ui JS -->
+<script src="../assets/js/vendor/jquery-ui.min.js"></script>
+<!-- Easing JS -->
+<script src="../assets/js/vendor/easing.js"></script>
+<!-- Color JS -->
+<script src="../assets/js/vendor/colors.js"></script>
+<!-- Popper JS -->
+<script src="../assets/js/vendor/popper.min.js"></script>
+<!-- Bootstrap Datepicker JS -->
+<script src="../assets/js/vendor/bootstrap-datepicker.js"></script>
+<!-- Jquery Nav JS -->
+<script src="../assets/js/vendor/jquery.nav.js"></script>
+<!-- Slicknav JS -->
+<script src="../assets/js/vendor/slicknav.min.js"></script>
+<!-- ScrollUp JS -->
+<script src="../assets/js/vendor/jquery.scrollUp.min.js"></script>
+<!-- Niceselect JS -->
+<script src="../assets/js/vendor/niceselect.js"></script>
+<!-- Tilt Jquery JS -->
+<script src="../assets/js/vendor/tilt.jquery.min.js"></script>
+<!-- Owl Carousel JS -->
+<script src="../assets/js/vendor/owl-carousel.js"></script>
+<!-- counterup JS -->
+<script src="../assets/js/vendor/jquery.counterup.min.js"></script>
+<!-- Steller JS -->
+<script src="../assets/js/vendor/steller.js"></script>
+<!-- Wow JS -->
+<script src="../assets/js/vendor/wow.min.js"></script>
+<!-- Magnific Popup JS -->
+<script src="../assets/js/vendor/jquery.magnific-popup.min.js"></script>
+<!-- Counter Up CDN JS -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../assets/js/vendor/bootstrap.min.js"></script>
 </body>
 </html>

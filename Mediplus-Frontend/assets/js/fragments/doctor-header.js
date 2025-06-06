@@ -2,7 +2,6 @@
 
 class AppHeader extends HTMLElement {
   connectedCallback() {
-    // 1. الحصول على اسم المستخدم (أو "[Guest]")
     let username = '[Guest]';
     const raw = sessionStorage.getItem('user');
     if (raw) {
@@ -14,13 +13,10 @@ class AppHeader extends HTMLElement {
       }
     }
 
-    // 2. تحديد ملف الصفحة الحالي
     const current = window.location.pathname.split('/').pop();
 
-    // 3. تحديد أي رابط يجب أن يحصل على فئة "active"
     const isActive = (page) => (current === page ? 'active' : '');
 
-    // 4. بناء بنية الهيدر مع الاستعاضة عن استدعاء isActive داخل القالب
     this.innerHTML = `
       <!-- Header Area -->
       <header class="header">
@@ -137,7 +133,6 @@ class AppHeader extends HTMLElement {
       </header>
     `;
 
-    // 5. زر الخروج: مسح الجلسة وإعادة التوجيه
     const logoutBtn = this.querySelector('#logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', e => {
@@ -147,7 +142,6 @@ class AppHeader extends HTMLElement {
       });
     }
 
-    // 6. إغلاق القوائم المنسدلة المفتوحة عند النقر خارج الـ header
     document.addEventListener('click', e => {
       if (!this.contains(e.target)) {
         this.querySelectorAll('.dropdown-menu.show').forEach(menu => {
