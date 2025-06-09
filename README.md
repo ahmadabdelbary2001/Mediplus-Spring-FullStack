@@ -24,6 +24,11 @@ MediPlus is a full-stack clinic management system built with Spring Boot (Java) 
 Under the hood, the application uses Spring Security for authentication/authorization, JPA/Hibernate for data persistence, and a RESTful design for API endpoints.
 
 ---
+## 📁 Project Structure
+- Mediplus.Backend/  — Spring Boot backend (Java)
+- Mediplus.Frontend/ — Static HTML/CSS/JavaScript frontend (vanilla JS)
+
+---
 
 ## Table of Contents
 
