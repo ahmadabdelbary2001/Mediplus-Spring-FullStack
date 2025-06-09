@@ -1,6 +1,7 @@
 package org.mediplus;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.admin.Admin;
 import org.mediplus.doctor.Doctor;
 import org.mediplus.patient.Patient;
 import org.mediplus.user.User;
@@ -30,6 +31,23 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         createDemoPatientIfNotExists();
         createDemoDoctorIfNotExists();
+        createDemoAdminIfNotExists();
+    }
+
+    private void createDemoAdminIfNotExists() {
+        String demoUsername = "admin";
+        Optional<User> existingAdmin = userRepository.findByUsername(demoUsername);
+        if (existingAdmin.isEmpty()) {
+            log.debug("Creating demo admin account");
+            Admin demoAdmin = new Admin();
+            demoAdmin.setUsername(demoUsername);
+            demoAdmin.setEmail("admin@example.com");
+            demoAdmin.setPassword(passwordEncoder.encode("admin123"));
+            demoAdmin.setRole("ADMIN");
+            demoAdmin.setTermsAccepted(true);
+            userRepository.save(demoAdmin);
+            log.info("Demo admin 'admin' created");
+        }
     }
 
     private void createDemoPatientIfNotExists() {
