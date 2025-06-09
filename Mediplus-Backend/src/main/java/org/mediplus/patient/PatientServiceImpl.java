@@ -1,6 +1,7 @@
 package org.mediplus.patient;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +29,21 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Patient updatePatient(Patient patient) {
-        return patientRepository.save(patient);
+        Long id = patient.getId();
+        if (id == null) {
+            throw new ResourceNotFoundException("Patient ID is missing");
+        }
+
+        Patient existing = patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
+
+        return patientRepository.save(existing);
     }
 
     @Override
     public Patient getPatientById(Long id) {
-        Optional<Patient> opt = patientRepository.findById(id);
-        return opt.orElse(null);
+        return patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
     }
 
     @Override
@@ -44,6 +53,9 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public void deletePatient(Long id) {
+        if (!patientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Patient not found with ID: " + id);
+        }
         patientRepository.deleteById(id);
     }
 }

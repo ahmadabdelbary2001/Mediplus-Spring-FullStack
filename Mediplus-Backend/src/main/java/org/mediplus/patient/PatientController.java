@@ -2,7 +2,9 @@ package org.mediplus.patient;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.exception.BadRequestException;
 import org.mediplus.user.UserService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,23 +34,19 @@ public class PatientController {
         log.info("Registering new user: {}", dto.getUsername());
         try {
             patientService.createPatient(fromDTO(dto));
-            log.info("User registered successfully: {}", dto.getUsername());
             return ResponseEntity.ok("User registered successfully");
-        } catch (Exception e) {
-            log.error("Registration failed: {}", e.getMessage());
-            return ResponseEntity.status(409).body("Username or email already taken");
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Username or email already taken");
         }
     }
 
     @GetMapping("/me")
     public ResponseEntity<PatientResponseDTO> getCurrentPatient(Principal principal) {
         if (principal == null) {
-            return ResponseEntity.status(401).build();
+            throw new BadRequestException("Not authenticated");
         }
-        Patient p = (Patient) userService.getUserByUsername(principal.getName());
-        if (p == null) {
-            return ResponseEntity.status(404).build();
-        }
+        String username = principal.getName();
+        Patient p = (Patient) userService.getUserByUsername(username);
         return ResponseEntity.ok(toDTO(p));
     }
 

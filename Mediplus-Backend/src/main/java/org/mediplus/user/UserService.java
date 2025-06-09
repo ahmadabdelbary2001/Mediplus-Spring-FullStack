@@ -5,6 +5,6 @@ public interface UserService {
     User getUserById(Long userId);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
-    boolean authenticate(String username, String rawPassword);
+    User authenticate(String username, String rawPassword);
     void deleteUser(Long userId);
 }

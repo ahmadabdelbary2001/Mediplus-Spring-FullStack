@@ -1,6 +1,7 @@
 package org.mediplus.appointment;
 
 import jakarta.validation.Valid;
+import org.mediplus.exception.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,30 +31,30 @@ public class AppointmentController {
     @GetMapping("/{id}")
     public ResponseEntity<AppointmentResponseDTO> getById(@PathVariable Long id) {
         Appointment appt = apptService.getAppointmentById(id);
-        if (appt == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(toDTO(appt));
     }
 
     @PostMapping
-    public ResponseEntity<AppointmentResponseDTO> create(@Valid @RequestBody AppointmentRequestDTO dto) {
-        Appointment toSave = fromDTO(dto);
-        Appointment created = apptService.createAppointment(toSave);
+    public ResponseEntity<AppointmentResponseDTO> create(@Valid @RequestBody AppointmentRequestDTO request) {
+        Appointment appt = fromDTO(request);
+        if (appt.getDateTime().isBefore(java.time.LocalDateTime.now())) {
+            throw new BadRequestException("Cannot create appointment in the past");
+        }
+        Appointment created = apptService.createAppointment(appt);
         return ResponseEntity.status(201).body(toDTO(created));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentResponseDTO> update(
             @PathVariable Long id,
-            @Valid @RequestBody AppointmentRequestDTO dto) {
+            @Valid @RequestBody AppointmentRequestDTO request) {
 
-        Appointment toUpdate = fromDTO(dto);
-        toUpdate.setId(id);
-        Appointment updated = apptService.updateAppointment(id, toUpdate);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
+        Appointment appt = fromDTO(request);
+        appt.setId(id);
+        if (appt.getDateTime().isBefore(java.time.LocalDateTime.now())) {
+            throw new BadRequestException("Cannot reschedule appointment to a past date");
         }
+        Appointment updated = apptService.updateAppointment(id, appt);
         return ResponseEntity.ok(toDTO(updated));
     }
 
@@ -62,19 +63,12 @@ public class AppointmentController {
             @PathVariable Long id,
             @RequestParam String status) {
 
-        Appointment updated = apptService.updateAppointmentStatus(id, status);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
+        Appointment existing = apptService.updateAppointmentStatus(id, status);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Appointment existing = apptService.getAppointmentById(id);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
         apptService.deleteAppointment(id);
         return ResponseEntity.noContent().build();
     }

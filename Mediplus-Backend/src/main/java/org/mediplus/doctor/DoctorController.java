@@ -2,6 +2,8 @@ package org.mediplus.doctor;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.exception.BadRequestException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +34,13 @@ public class DoctorController {
 
     @PostMapping
     public ResponseEntity<DoctorResponseDTO> createDoctor(@Valid @RequestBody DoctorRequestDTO dto) {
-        Doctor doc = fromDTO(dto);
-        Doctor created = doctorService.createDoctor(doc);
-        return ResponseEntity.status(201).body(toDTO(created));
+        try {
+            Doctor doc = fromDTO(dto);
+            Doctor created = doctorService.createDoctor(doc);
+            return ResponseEntity.status(201).body(toDTO(created));
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Username or email already taken");
+        }
     }
 
     @GetMapping("/{id}")
@@ -54,9 +60,6 @@ public class DoctorController {
         Doctor doc = fromDTO(dto);
         doc.setId(id);
         Doctor updated = doctorService.updateDoctor(doc);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(toDTO(updated));
     }
 

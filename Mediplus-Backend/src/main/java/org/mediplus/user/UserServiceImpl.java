@@ -1,6 +1,7 @@
 package org.mediplus.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +20,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
     }
 
     @Override
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId).orElse(null);
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     @Override
@@ -38,17 +41,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean authenticate(String username, String rawPassword) {
-        log.debug("Authenticating user: {}", username);
-        User existing = userRepository.findByUsername(username).orElse(null);
-        if (existing == null) {
-            return false;
+    public User authenticate(String username, String rawPassword) {
+        User stored = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("No such user"));
+
+        if (!passwordEncoder.matches(rawPassword, stored.getPassword())) {
+            throw new IllegalArgumentException("Invalid credentials");
         }
-        return passwordEncoder.matches(rawPassword, existing.getPassword());
+
+        return stored;
+
     }
 
     @Override
-    public void deleteUser(Long userId) {
-        userRepository.deleteById(userId);
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found with ID: " + id);
+        }
+        userRepository.deleteById(id);
     }
 }

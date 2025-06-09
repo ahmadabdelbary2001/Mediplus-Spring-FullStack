@@ -1,6 +1,7 @@
 package org.mediplus.doctor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,13 +30,31 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public Doctor updateDoctor(Doctor doctor) {
-        return doctorRepository.save(doctor);
+        Long id = doctor.getId();
+        if (id == null) {
+            throw new ResourceNotFoundException("Doctor ID is missing");
+        }
+
+        Doctor existing = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + id));
+
+        existing.setUsername(doctor.getUsername());
+        existing.setEmail(doctor.getEmail());
+        existing.setSpecialization(doctor.getSpecialization());
+        existing.setLicenseNumber(doctor.getLicenseNumber());
+        existing.setClinicLocation(doctor.getClinicLocation());
+        if (doctor.getPassword() != null && !doctor.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(doctor.getPassword()));
+        }
+        existing.setTermsAccepted(doctor.getTermsAccepted());
+
+        return doctorRepository.save(existing);
     }
 
     @Override
     public Doctor getDoctorById(Long id) {
-        Optional<Doctor> opt = doctorRepository.findById(id);
-        return opt.orElse(null);
+        return doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + id));
     }
 
     @Override
@@ -45,6 +64,9 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public void deleteDoctor(Long id) {
+        if (!doctorRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Doctor not found with ID: " + id);
+        }
         doctorRepository.deleteById(id);
     }
 }

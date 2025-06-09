@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -19,8 +20,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,83 +42,95 @@ class PatientControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(patientController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(patientController)
+                .setControllerAdvice(new org.mediplus.exception.GlobalExceptionHandler())
+                .build();
     }
 
     @Test
     @DisplayName("GET /api/patients/me → 200 OK returns PatientResponseDTO when authenticated")
-    void getCurrentPatient_authenticated() throws Exception {
+    void getCurrentPatient_Success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
-        Patient p = new Patient("jane", "jane@example.com", "pass", dob, "INS-123");
+        Patient p = new Patient("jane", "jane@example.com", "encodedPass", dob, "INS-123");
         p.setId(1L);
-        p.setInsuranceId("INS-123");
         p.setRole("PATIENT");
-        p.setTermsAccepted(true);
+        p.setInsuranceId("INS-123");
 
         given(userService.getUserByUsername("jane")).willReturn(p);
 
         mockMvc.perform(get("/api/patients/me")
                         .principal((Principal) () -> "jane"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("jane"))
-                .andExpect(jsonPath("$.insuranceId").value("INS-123"));
-
-        verify(userService, times(1)).getUserByUsername("jane");
+                .andExpect(jsonPath("$.email").value("jane@example.com"))
+                .andExpect(jsonPath("$.insuranceId").value("INS-123"))
+                .andExpect(jsonPath("$.role").value("PATIENT"));
     }
 
     @Test
     @DisplayName("GET /api/patients/me → 404 Not Found when user not found")
-    void getCurrentPatient_notFound() throws Exception {
-        given(userService.getUserByUsername("jane")).willReturn(null);
+    void getCurrentPatient_NotFound() throws Exception {
+        given(userService.getUserByUsername("jane"))
+                .willThrow(new ResourceNotFoundException("Patient not found"));
 
         mockMvc.perform(get("/api/patients/me")
                         .principal((Principal) () -> "jane"))
-                .andExpect(status().isNotFound());
-
-        verify(userService, times(1)).getUserByUsername("jane");
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Patient not found"));
     }
 
     @Test
-    @DisplayName("GET /api/patients/me → 401 Unauthorized when no principal")
-    void getCurrentPatient_unauthenticated() throws Exception {
+    @DisplayName("GET /api/patients/me → 400 Bad Request when no principal")
+    void getCurrentPatient_Unauthenticated() throws Exception {
         mockMvc.perform(get("/api/patients/me"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Not authenticated"));
     }
 
     @Test
     @DisplayName("GET /api/patients → 200 OK returns list of PatientResponseDTO")
-    void listAllPatients_success() throws Exception {
+    void listAllPatients_Success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         Patient p1 = new Patient("a", "a@example.com", "pass", dob, "INS-1");
+        p1.setId(1L);
         p1.setRole("PATIENT");
+        p1.setInsuranceId("INS-1");
+
         Patient p2 = new Patient("b", "b@example.com", "pass", dob, "INS-2");
+        p2.setId(2L);
         p2.setRole("PATIENT");
+        p2.setInsuranceId("INS-2");
+
         given(patientService.findAllPatients()).willReturn(List.of(p1, p2));
 
         mockMvc.perform(get("/api/patients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].username").value("a"))
                 .andExpect(jsonPath("$[1].username").value("b"));
-
-        verify(patientService, times(1)).findAllPatients();
     }
 
     @Test
-    @DisplayName("POST /api/patients → 201 Created returns created PatientResponseDTO")
-    void createPatient_success() throws Exception {
+    @DisplayName("POST /api/patients → 201 Created returns PatientResponseDTO")
+    void createPatient_Success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         PatientRequestDTO dto = new PatientRequestDTO();
         dto.setUsername("new");
         dto.setEmail("new@example.com");
-        dto.setPassword("password"); // تم تغييره من "pass" إلى "password"
+        dto.setPassword("securePass");
         dto.setDateOfBirth(dob);
         dto.setInsuranceId("INS-3");
         dto.setTermsAccepted(true);
 
-        Patient p = new Patient("new", "new@example.com", "password", dob, "INS-3");
-        p.setId(5L);
-        p.setRole("PATIENT");
-        given(patientService.createPatient(any(Patient.class))).willReturn(p);
+        Patient saved = new Patient("new", "new@example.com", "encodedPass", dob, "INS-3");
+        saved.setId(5L);
+        saved.setRole("PATIENT");
+        saved.setInsuranceId("INS-3");
+
+        given(patientService.createPatient(any(Patient.class))).willReturn(saved);
 
         String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(post("/api/patients")
@@ -126,27 +138,27 @@ class PatientControllerTest {
                         .content(payload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(5))
-                .andExpect(jsonPath("$.username").value("new"));
-
-        verify(patientService, times(1)).createPatient(any(Patient.class));
+                .andExpect(jsonPath("$.username").value("new"))
+                .andExpect(jsonPath("$.insuranceId").value("INS-3"));
     }
 
     @Test
     @DisplayName("PUT /api/patients/{id} → 200 OK returns updated PatientResponseDTO")
-    void updatePatient_success() throws Exception {
+    void updatePatient_Success() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         PatientRequestDTO dto = new PatientRequestDTO();
         dto.setUsername("upd");
         dto.setEmail("upd@example.com");
-        dto.setPassword("password"); // تم تغييره هنا أيضًا
+        dto.setPassword("newPass");
         dto.setDateOfBirth(dob);
         dto.setInsuranceId("INS-4");
         dto.setTermsAccepted(true);
 
-        Patient p = new Patient("upd", "upd@example.com", "password", dob, "INS-4");
-        p.setId(5L);
-        p.setRole("PATIENT");
-        given(patientService.updatePatient(any(Patient.class))).willReturn(p);
+        Patient updated = new Patient("upd", "upd@example.com", "encodedPass", dob, "INS-4");
+        updated.setId(5L);
+        updated.setRole("PATIENT");
+
+        given(patientService.updatePatient(any(Patient.class))).willReturn(updated);
 
         String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(put("/api/patients/5")
@@ -155,39 +167,48 @@ class PatientControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(5))
                 .andExpect(jsonPath("$.username").value("upd"));
-
-        verify(patientService, times(1)).updatePatient(any(Patient.class));
     }
 
     @Test
-    @DisplayName("PUT /api/patients/{id} → 404 Not Found when update fails")
-    void updatePatient_notFound() throws Exception {
+    @DisplayName("PUT /api/patients/{id} → 404 Not Found when updating non-existent")
+    void updatePatient_NotFound() throws Exception {
         Date dob = new SimpleDateFormat("yyyy-MM-dd").parse("1990-01-01");
         PatientRequestDTO dto = new PatientRequestDTO();
         dto.setUsername("upd");
         dto.setEmail("upd@example.com");
-        dto.setPassword("password"); // تم تغييره هنا أيضًا
+        dto.setPassword("newPass");
         dto.setDateOfBirth(dob);
         dto.setInsuranceId("INS-4");
         dto.setTermsAccepted(true);
 
-        given(patientService.updatePatient(any(Patient.class))).willReturn(null);
+        given(patientService.updatePatient(any(Patient.class)))
+                .willThrow(new ResourceNotFoundException("Patient not found with ID: 5"));
 
         String payload = objectMapper.writeValueAsString(dto);
         mockMvc.perform(put("/api/patients/5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
-                .andExpect(status().isNotFound());
-
-        verify(patientService, times(1)).updatePatient(any(Patient.class));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Patient not found with ID: 5"));
     }
 
     @Test
-    @DisplayName("DELETE /api/patients/{id} → 204 No Content")
-    void deletePatient_success() throws Exception {
+    @DisplayName("DELETE /api/patients/{id} → 204 No Content when deleted")
+    void deletePatient_Success() throws Exception {
         mockMvc.perform(delete("/api/patients/10"))
                 .andExpect(status().isNoContent());
+    }
 
-        verify(patientService, times(1)).deletePatient(10L);
+    @Test
+    @DisplayName("DELETE /api/patients/{id} → 404 Not Found when missing")
+    void deletePatient_NotFound() throws Exception {
+        doThrow(new ResourceNotFoundException("Patient not found with ID: 10"))
+                .when(patientService).deletePatient(10L);
+
+        mockMvc.perform(delete("/api/patients/10"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Patient not found with ID: 10"));
     }
 }

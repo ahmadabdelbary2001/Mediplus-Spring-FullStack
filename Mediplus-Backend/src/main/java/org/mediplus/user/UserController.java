@@ -2,6 +2,8 @@ package org.mediplus.user;
 
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
+import org.mediplus.exception.BadRequestException;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -23,19 +25,13 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO payload) {
-        String username = payload.getUsername();
-        String password = payload.getPassword();
-        log.debug("Login attempt for user: {}", username);
-
-        User existingUser = userService.getUserByUsername(username);
-        if (existingUser == null ||
-                !userService.authenticate(existingUser.getUsername(), password)
-        ) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO dto) {
+        try {
+            User authenticated = userService.authenticate(dto.getUsername(), dto.getPassword());
+            return ResponseEntity.ok(authenticated.getId().toString());
+        } catch (ResourceNotFoundException | IllegalArgumentException e) {
+            throw new BadRequestException("Login failed: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(String.valueOf(existingUser.getId()));
     }
 
     @GetMapping("/{username}")

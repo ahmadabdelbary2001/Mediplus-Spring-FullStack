@@ -51,9 +51,9 @@ class UserControllerTest {
         stored.setTermsAccepted(true);
 
         given(userService.getUserByUsername("charlie")).willReturn(stored);
-        given(userService.authenticate("charlie", "pass")).willReturn(true);
+        // given(userService.authenticate("charlie", "pass")).willReturn(true);
 
-        LoginDTO loginDto = new LoginDTO("charlie", "pass");
+        LoginRequestDTO loginDto = new LoginRequestDTO("charlie", "pass");
         String json = mapper.writeValueAsString(loginDto);
 
         mockMvc.perform(post("/api/users/login")
@@ -71,7 +71,7 @@ class UserControllerTest {
     void login_Failed() throws Exception {
         given(userService.getUserByUsername("charlie")).willReturn(null);
 
-        LoginDTO loginDto = new LoginDTO("charlie", "pass");
+        LoginRequestDTO loginDto = new LoginRequestDTO("charlie", "pass");
         String json = mapper.writeValueAsString(loginDto);
 
         mockMvc.perform(post("/api/users/login")

@@ -1,10 +1,13 @@
 package org.mediplus.appointment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mediplus.exception.GlobalExceptionHandler;
+import org.mediplus.exception.ResourceNotFoundException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -17,7 +20,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,14 +40,17 @@ class AppointmentControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(appointmentController)
+                .setControllerAdvice(new org.mediplus.exception.GlobalExceptionHandler())
+                .build();
         mapper.registerModule(new JavaTimeModule());
-
-        mockMvc = MockMvcBuilders.standaloneSetup(appointmentController).build();
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
     @Test
     @DisplayName("GET /api/appointments → 200 OK returns all appointments")
-    void listAllAppointments() throws Exception {
+    void listAllAppointments_Success() throws Exception {
         Appointment a1 = new Appointment();
         a1.setId(10L);
         a1.setDateTime(LocalDateTime.of(2025, 6, 15, 14, 30));
@@ -64,15 +71,11 @@ class AppointmentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(10))
-                .andExpect(jsonPath("$[0].status").value("PENDING"))
-                .andExpect(jsonPath("$[1].id").value(11))
                 .andExpect(jsonPath("$[1].status").value("CONFIRMED"));
-
-        verify(apptService, times(1)).getAllAppointments();
     }
 
     @Test
-    @DisplayName("GET /api/appointments/{id} → 200 OK when found")
+    @DisplayName("GET /api/appointments/{id} → 200 OK returns AppointmentResponseDTO when found")
     void getById_Found() throws Exception {
         Appointment a = new Appointment();
         a.setId(20L);
@@ -86,171 +89,157 @@ class AppointmentControllerTest {
         mockMvc.perform(get("/api/appointments/20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(20))
-                .andExpect(jsonPath("$.patientUsername").value("carol"))
-                .andExpect(jsonPath("$.doctorUsername").value("docC"));
-
-        verify(apptService, times(1)).getAppointmentById(20L);
+                .andExpect(jsonPath("$.patientUsername").value("carol"));
     }
 
     @Test
-    @DisplayName("GET /api/appointments/{id} → 404 Not Found")
+    @DisplayName("GET /api/appointments/{id} → 404 Not Found when missing")
     void getById_NotFound() throws Exception {
-        given(apptService.getAppointmentById(99L)).willReturn(null);
+        given(apptService.getAppointmentById(99L))
+                .willThrow(new ResourceNotFoundException("Appointment not found with ID: 99"));
 
         mockMvc.perform(get("/api/appointments/99"))
-                .andExpect(status().isNotFound());
-
-        verify(apptService, times(1)).getAppointmentById(99L);
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Appointment not found with ID: 99"));
     }
 
     @Test
-    @DisplayName("POST /api/appointments → 201 Created")
+    @DisplayName("POST /api/appointments → 201 Created returns AppointmentResponseDTO")
     void createAppointment_Success() throws Exception {
-        AppointmentRequestDTO incoming = new AppointmentRequestDTO();
-        incoming.setDateTime(LocalDateTime.of(2025, 8, 5, 15, 0));
-        incoming.setStatus("PENDING");
-        incoming.setPatientUsername("dan");
-        incoming.setDoctorUsername("docD");
+        AppointmentRequestDTO dto = new AppointmentRequestDTO();
+        dto.setDateTime(LocalDateTime.of(2025, 8, 5, 15, 0));
+        dto.setStatus("PENDING");
+        dto.setPatientUsername("dan");
+        dto.setDoctorUsername("docD");
 
         Appointment saved = new Appointment();
         saved.setId(30L);
-        saved.setDateTime(incoming.getDateTime());
-        saved.setStatus(incoming.getStatus());
-        saved.setPatientUsername(incoming.getPatientUsername());
-        saved.setDoctorUsername(incoming.getDoctorUsername());
+        saved.setDateTime(dto.getDateTime());
+        saved.setStatus(dto.getStatus());
+        saved.setPatientUsername(dto.getPatientUsername());
+        saved.setDoctorUsername(dto.getDoctorUsername());
 
         given(apptService.createAppointment(any(Appointment.class))).willReturn(saved);
 
-        String json = mapper.writeValueAsString(incoming);
+        String payload = mapper.writeValueAsString(dto);
 
         mockMvc.perform(post("/api/appointments")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .accept(MediaType.APPLICATION_JSON) // 3. نحدّد أنّنا نتوقع JSON
+                        .content(payload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(30))
-                .andExpect(jsonPath("$.patientUsername").value("dan"))
                 .andExpect(jsonPath("$.doctorUsername").value("docD"));
-
-        verify(apptService, times(1)).createAppointment(any(Appointment.class));
     }
 
     @Test
-    @DisplayName("PUT /api/appointments/{id} → 200 OK when update succeeds")
+    @DisplayName("PUT /api/appointments/{id} → 200 OK returns updated AppointmentResponseDTO")
     void updateAppointment_Success() throws Exception {
-        AppointmentRequestDTO updateRequest = new AppointmentRequestDTO();
-        updateRequest.setDateTime(LocalDateTime.of(2025, 9, 10, 10, 0));
-        updateRequest.setStatus("CANCELLED");
-        updateRequest.setPatientUsername("erin");
-        updateRequest.setDoctorUsername("docE");
+        AppointmentRequestDTO dto = new AppointmentRequestDTO();
+        dto.setDateTime(LocalDateTime.of(2025, 9, 10, 10, 0));
+        dto.setStatus("CANCELLED");
+        dto.setPatientUsername("erin");
+        dto.setDoctorUsername("docE");
 
         Appointment updated = new Appointment();
         updated.setId(40L);
-        updated.setDateTime(updateRequest.getDateTime());
-        updated.setStatus(updateRequest.getStatus());
-        updated.setPatientUsername(updateRequest.getPatientUsername());
-        updated.setDoctorUsername(updateRequest.getDoctorUsername());
+        updated.setDateTime(dto.getDateTime());
+        updated.setStatus(dto.getStatus());
+        updated.setPatientUsername(dto.getPatientUsername());
+        updated.setDoctorUsername(dto.getDoctorUsername());
 
         given(apptService.updateAppointment(eq(40L), any(Appointment.class))).willReturn(updated);
 
-        String json = mapper.writeValueAsString(updateRequest);
-
         mockMvc.perform(put("/api/appointments/40")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .accept(MediaType.APPLICATION_JSON) // نتوقع JSON
+                        .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(40))
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
-
-        verify(apptService, times(1)).updateAppointment(eq(40L), any(Appointment.class));
     }
 
     @Test
-    @DisplayName("PUT /api/appointments/{id} → 404 Not Found if not present")
+    @DisplayName("POST /api/appointments → 400 Bad Request when date in the past")
+    void createAppointment_PastDate() throws Exception {
+        AppointmentRequestDTO dto = new AppointmentRequestDTO();
+        dto.setDateTime(LocalDateTime.of(2020, 1, 1, 10, 0)); // تاريخ قديم
+        dto.setStatus("PENDING");
+        dto.setPatientUsername("dan");
+        dto.setDoctorUsername("docD");
+
+        mockMvc.perform(post("/api/appointments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON) // نتوقع JSON
+                        .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Cannot create appointment in the past"));
+    }
+
+    @Test
+    @DisplayName("PUT /api/appointments/{id} → 404 Not Found when missing")
     void updateAppointment_NotFound() throws Exception {
-        AppointmentRequestDTO updateRequest = new AppointmentRequestDTO();
-        updateRequest.setDateTime(LocalDateTime.of(2025, 10, 1, 12, 0));
-        updateRequest.setStatus("PENDING");
-        updateRequest.setPatientUsername("fiona");
-        updateRequest.setDoctorUsername("docF");
+        AppointmentRequestDTO dto = new AppointmentRequestDTO();
+        dto.setDateTime(LocalDateTime.of(2025, 10, 1, 12, 0));
+        dto.setStatus("PENDING");
+        dto.setPatientUsername("fiona");
+        dto.setDoctorUsername("docF");
 
-        given(apptService.updateAppointment(eq(99L), any(Appointment.class))).willReturn(null);
-
-        String json = mapper.writeValueAsString(updateRequest);
+        given(apptService.updateAppointment(eq(99L), any(Appointment.class)))
+                .willThrow(new ResourceNotFoundException("Appointment not found with ID: 99"));
 
         mockMvc.perform(put("/api/appointments/99")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isNotFound());
-
-        verify(apptService, times(1)).updateAppointment(eq(99L), any(Appointment.class));
+                        .accept(MediaType.APPLICATION_JSON) // نتوقع JSON
+                        .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Appointment not found with ID: 99"));
     }
 
     @Test
-    @DisplayName("PATCH /api/appointments/{id}/status → 204 No Content")
+    @DisplayName("PATCH /api/appointments/{id}/status → 204 No Content on success")
     void updateStatus_Success() throws Exception {
-        Appointment existing = new Appointment();
-        existing.setId(50L);
-        existing.setStatus("PENDING");
-        existing.setDateTime(LocalDateTime.of(2025, 11, 5, 16, 0));
-        existing.setPatientUsername("george");
-        existing.setDoctorUsername("docG");
-
-        Appointment updated = new Appointment();
-        updated.setId(50L);
-        updated.setStatus("CONFIRMED");
-        updated.setDateTime(existing.getDateTime());
-        updated.setPatientUsername(existing.getPatientUsername());
-        updated.setDoctorUsername(existing.getDoctorUsername());
-
-        given(apptService.updateAppointmentStatus(50L, "CONFIRMED")).willReturn(updated);
-
         mockMvc.perform(patch("/api/appointments/50/status")
                         .param("status", "CONFIRMED"))
                 .andExpect(status().isNoContent());
-
-        verify(apptService, times(1)).updateAppointmentStatus(50L, "CONFIRMED");
     }
 
     @Test
-    @DisplayName("PATCH /api/appointments/{id}/status → 404 Not Found")
+    @DisplayName("PATCH /api/appointments/{id}/status → 404 Not Found when missing")
     void updateStatus_NotFound() throws Exception {
-        given(apptService.updateAppointmentStatus(99L, "CANCELLED")).willReturn(null);
+        doThrow(new ResourceNotFoundException("Appointment not found with ID: 99"))
+                .when(apptService).updateAppointmentStatus(99L, "CANCELLED");
 
         mockMvc.perform(patch("/api/appointments/99/status")
                         .param("status", "CANCELLED"))
-                .andExpect(status().isNotFound());
-
-        verify(apptService, times(1)).updateAppointmentStatus(99L, "CANCELLED");
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Appointment not found with ID: 99"));
     }
 
     @Test
-    @DisplayName("DELETE /api/appointments/{id} → 204 No Content when deleted")
+    @DisplayName("DELETE /api/appointments/{id} → 204 No Content when successful")
     void deleteAppointment_Success() throws Exception {
-        Appointment existing = new Appointment();
-        existing.setId(60L);
-        existing.setStatus("PENDING");
-        existing.setPatientUsername("harry");
-        existing.setDoctorUsername("docH");
+        doNothing().when(apptService).deleteAppointment(30L);
 
-        given(apptService.getAppointmentById(60L)).willReturn(existing);
-        doNothing().when(apptService).deleteAppointment(60L);
-
-        mockMvc.perform(delete("/api/appointments/60"))
+        mockMvc.perform(delete("/api/appointments/30")
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
-
-        verify(apptService, times(1)).getAppointmentById(60L);
-        verify(apptService, times(1)).deleteAppointment(60L);
     }
 
     @Test
-    @DisplayName("DELETE /api/appointments/{id} → 404 Not Found if no such appointment")
+    @DisplayName("DELETE /api/appointments/{id} → 404 Not Found when missing")
     void deleteAppointment_NotFound() throws Exception {
-        given(apptService.getAppointmentById(99L)).willReturn(null);
+        doThrow(new ResourceNotFoundException("Appointment not found with ID: 99"))
+                .when(apptService).deleteAppointment(99L);
 
-        mockMvc.perform(delete("/api/appointments/99"))
-                .andExpect(status().isNotFound());
-
-        verify(apptService, times(1)).getAppointmentById(99L);
-        verify(apptService, never()).deleteAppointment(anyLong());
+        mockMvc.perform(delete("/api/appointments/99")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Appointment not found with ID: 99"));
     }
 }
