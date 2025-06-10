@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Fragmets مشتركة -->
+    <script src="../assets/js/fragments/head.js" type="module"></script>
+    <script src="../assets/js/fragments/preloader.js" type="module"></script>
+    <script src="../assets/js/fragments/admin-header.js" type="module"></script>
+    <script src="../assets/js/fragments/footer.js" type="module"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <app-head data-page-title="Manage Doctors"></app-head>
+</head>
+<body data-requires-login="true">
+    <app-preloader></app-preloader>
+    <app-header></app-header>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Doctors' Management</h3>
+                <a href="create-doctor.html" class="btn btn-primary">Add a new doctor</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="doctorsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Specialization</th>
+                            <th>License Number</th>
+                            <th>Clinic Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <app-footer></app-footer>
+
+    <script src="../assets/js/api/utils.js" async></script>
+    <script src="../assets/js/api/admin/users-doctors.js" async></script>
+</body>
+</html>

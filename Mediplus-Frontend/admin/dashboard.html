@@ -1,0 +1,122 @@
+<!-- admin/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../assets/js/fragments/head.js" type="module"></script>
+    <script src="../assets/js/fragments/preloader.js" type="module"></script>
+    <script src="../assets/js/fragments/admin-header.js" type="module"></script>
+    <script src="../assets/js/fragments/footer.js" type="module"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <app-head data-page-title="Dashboard"></app-head>
+</head>
+<body data-requires-login="true">
+<app-preloader></app-preloader>
+<app-header></app-header>
+
+    <section class="py-5">
+        <div class="container">
+            <h2 class="mb-4">Hello <span id="admin-name">[Admin]</span></h2>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">Total patients</h5>
+                            <h2 id="total-patients">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h5 class="card-title">Total doctors</h5>
+                            <h2 id="total-doctors">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <h5 class="card-title">Total appointments today</h5>
+                            <h2 id="today-appointments">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Short reports</h5>
+                            <p>Here you can add charts or detailed statistical data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<app-footer></app-footer>
+<script src="../assets/js/api/utils.js" async></script>
+<!-- jquery Min JS -->
+<script src="../assets/js/vendor/jquery.min.js"></script>
+<!-- jquery Migrate JS -->
+<script src="../assets/js/vendor/jquery-migrate-3.0.0.js"></script>
+<!-- jquery Ui JS -->
+<script src="../assets/js/vendor/jquery-ui.min.js"></script>
+<!-- Easing JS -->
+<script src="../assets/js/vendor/easing.js"></script>
+<!-- Color JS -->
+<script src="../assets/js/vendor/colors.js"></script>
+<!-- Popper JS -->
+<script src="../assets/js/vendor/popper.min.js"></script>
+<!-- Bootstrap Datepicker JS -->
+<script src="../assets/js/vendor/bootstrap-datepicker.js"></script>
+<!-- Jquery Nav JS -->
+<script src="../assets/js/vendor/jquery.nav.js"></script>
+<!-- Slicknav JS -->
+<script src="../assets/js/vendor/slicknav.min.js"></script>
+<!-- ScrollUp JS -->
+<script src="../assets/js/vendor/jquery.scrollUp.min.js"></script>
+<!-- Niceselect JS -->
+<script src="../assets/js/vendor/niceselect.js"></script>
+<!-- Tilt Jquery JS -->
+<script src="../assets/js/vendor/tilt.jquery.min.js"></script>
+<!-- Owl Carousel JS -->
+<script src="../assets/js/vendor/owl-carousel.js"></script>
+<!-- counterup JS -->
+<script src="../assets/js/vendor/jquery.counterup.min.js"></script>
+<!-- Steller JS -->
+<script src="../assets/js/vendor/steller.js"></script>
+<!-- Wow JS -->
+<script src="../assets/js/vendor/wow.min.js"></script>
+<!-- Magnific Popup JS -->
+<script src="../assets/js/vendor/jquery.magnific-popup.min.js"></script>
+<!-- Counter Up CDN JS -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="../assets/js/vendor/bootstrap.min.js"></script>
+<!-- Main JS -->
+<script src="../assets/js/vendor/main.js"></script>
+
+    <script>
+        $(function() {
+            $('#total-patients').text('125');
+            $('#total-doctors').text('23');
+            $('#today-appointments').text('8');
+
+            const admin = sessionStorage.getItem('user');
+            if (admin) {
+                try {
+                    const u = JSON.parse(admin);
+                    $('#admin-name').text(u.username || '[Admin]');
+                } catch {
+                    $('#admin-name').text('[Admin]');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
